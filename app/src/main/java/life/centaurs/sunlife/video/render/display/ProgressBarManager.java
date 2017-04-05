@@ -1,11 +1,10 @@
 package life.centaurs.sunlife.video.render.display;
 
 
-import android.os.AsyncTask;
 import android.os.Handler;
 import android.widget.ProgressBar;
 
-public final class ProgressBarManager extends AsyncTask{
+public final class ProgressBarManager{
     private ProgressBar progressBar;
     private int progressStatus = 0;
     private volatile boolean resumed = false;
@@ -50,30 +49,33 @@ public final class ProgressBarManager extends AsyncTask{
         resumed = true;
     }
 
-    @Override
-    protected Object doInBackground(Object[] objects) {
-        while (progressStatus < PROGRESS_STATUS_MAX) {
-            if (resumed) {
-                progressStatus += 1;
-            }
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    progressBar.setProgress(progressStatus);
+    public void startProgressBar(){
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while (progressStatus < PROGRESS_STATUS_MAX) {
+                    if (resumed) {
+                        progressStatus += 1;
+                    }
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            progressBar.setProgress(progressStatus);
+                        }
+                    });
+                    try {
+                        Thread.sleep(timeVideoProgress);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
-            });
-            try {
-                Thread.sleep(timeVideoProgress);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        onProgressListener.onEndProgress();
+                    }
+                });
             }
-        }
-        return null;
-    }
-
-    @Override
-    protected void onPostExecute(Object o) {
-        onProgressListener.onEndProgress();
-        super.onPostExecute(o);
+        }).start();
     }
 }

@@ -9,10 +9,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 import life.centaurs.sunlife.video.edit.VideoEditor;
+import life.centaurs.sunlife.video.render.enums.MediaExtensionEnum;
 
 import static life.centaurs.sunlife.video.edit.EditVideoCommandsStr.getMakePhotoScreenshotsCommand;
 import static life.centaurs.sunlife.video.edit.EditVideoCommandsStr.getMakeVideoScreenshotsCommand;
+import static life.centaurs.sunlife.video.render.constants.DisplayConstants.DOT_STRING;
+import static life.centaurs.sunlife.video.render.constants.DisplayConstants.EMPTY_STRING;
+import static life.centaurs.sunlife.video.render.constants.DisplayConstants.FFMPEG_COUNTER;
+import static life.centaurs.sunlife.video.render.constants.DisplayConstants.NAME_SEPARATOR;
+import static life.centaurs.sunlife.video.render.constants.DisplayConstants.SCREENSHOTS_FRAMES_PER_SECOND;
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.SCREENSHOT_HEIGHT;
+import static life.centaurs.sunlife.video.render.constants.DisplayConstants.SCREENSHOT_NAME_START_COUNTER;
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.SCREENSHOT_WIDTH;
 
 public class ChunksContainer {
@@ -21,10 +28,20 @@ public class ChunksContainer {
     private Handler handler;
     private VideoEditor videoEditor;
     private Context context;
+    private OnScreenshotEndCreationListener onScreenshotEndCreationListener;
+    private String currentTime;
+    private String folderPath;
+    private File chunkFile;
+    public static boolean screenshotNumberNameIsTaken = false;
 
-    public ChunksContainer(Context context){
+    public interface OnScreenshotEndCreationListener{
+        void onEndScreenshotCreation();
+    }
+
+    public ChunksContainer(Context context, OnScreenshotEndCreationListener onScreenshotEndCreationListener){
+        this.onScreenshotEndCreationListener = onScreenshotEndCreationListener;
         this.context = context;
-        videoEditor = new VideoEditor(context);
+        videoEditor = new VideoEditor(context, onFfmpegSuccessListener);
         chunksFiles = new ArrayList<>();
         chunksScreenshots = new HashMap<>();
         handler = new Handler();
@@ -35,8 +52,13 @@ public class ChunksContainer {
     }
 
     public void setChunkFile(File chunkFile) {
+        this.chunkFile = chunkFile;
         this.chunksFiles.add(chunkFile);
         setChunksScreenshots(chunkFile);
+    }
+
+    public Map<String, ArrayList<File>> getChunkScreenshots() {
+        return chunksScreenshots;
     }
 
     public ArrayList<File> getChunkScreenshots(File chunkFile) {
@@ -47,7 +69,8 @@ public class ChunksContainer {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                int i = chunkFile.getName().lastIndexOf(".");
+
+                int i = chunkFile.getName().lastIndexOf(DOT_STRING);
                 String currentFileExtension = chunkFile.getName().substring(i);
 
                 int width;
@@ -63,41 +86,51 @@ public class ChunksContainer {
                         height = SCREENSHOT_HEIGHT;
                 }
 
-                long currentTime = System.currentTimeMillis();
+                if(!screenshotNumberNameIsTaken) {
+                    currentTime = "" + System.currentTimeMillis();
+                    screenshotNumberNameIsTaken = true;
+                }
 
-                String folderPath = chunkFile.getAbsolutePath().replace(chunkFile.getName(), "");
+                folderPath = chunkFile.getAbsolutePath().replace(chunkFile.getName(), EMPTY_STRING);
 
                 StringBuilder absoluteScreenshotFilePathStringBuilder = new StringBuilder();
-                absoluteScreenshotFilePathStringBuilder.append(folderPath).append(currentTime).append("_%d").append(".jpg");
+                absoluteScreenshotFilePathStringBuilder.append(folderPath).append(currentTime)
+                        .append(NAME_SEPARATOR.concat(FFMPEG_COUNTER)).append(MediaExtensionEnum.JPG.getExtensionStr());
 
-                if (currentFileExtension.equalsIgnoreCase(".mp4")){
+                if (currentFileExtension.equalsIgnoreCase(MediaExtensionEnum.MP4.getExtensionStr())){
                     videoEditor.execFFmpegBinary(getMakeVideoScreenshotsCommand(chunkFile
-                            , absoluteScreenshotFilePathStringBuilder, 2, width, height));
-                } else if (currentFileExtension.equalsIgnoreCase(".jpg")){
+                            , absoluteScreenshotFilePathStringBuilder, SCREENSHOTS_FRAMES_PER_SECOND, width, height));
+                } else if (currentFileExtension.equalsIgnoreCase(MediaExtensionEnum.JPG.getExtensionStr())){
                     videoEditor.execFFmpegBinary(getMakePhotoScreenshotsCommand(chunkFile
                             , absoluteScreenshotFilePathStringBuilder, width, height));
                 }
-
-                int fileCounter = 1;
-                File screenshotFile = new File(folderPath + currentTime + "_" + fileCounter);
-
-                while(screenshotFile.exists()){
-
-                    if (!chunksScreenshots.containsKey(chunkFile.getName())){
-                        chunksScreenshots.put(chunkFile.getName(), new ArrayList<File>());
-                    }
-                    chunksScreenshots.get(chunkFile.getName()).add(screenshotFile);
-
-                    fileCounter++;
-                    screenshotFile = new File(folderPath + currentTime + "_" + fileCounter);
-                }
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-
-                    }
-                });
             }
+
         }).start();
+
     }
+
+    private VideoEditor.OnFfmpegSuccessListener onFfmpegSuccessListener = new VideoEditor.OnFfmpegSuccessListener() {
+        @Override
+        public void onSuccess() {
+            int fileCounter = SCREENSHOT_NAME_START_COUNTER;
+            File screenshotFile = new File(folderPath.concat(currentTime).concat(NAME_SEPARATOR) + fileCounter
+                    + MediaExtensionEnum.JPG.getExtensionStr());
+            while(screenshotFile.exists()){
+                if (!chunksScreenshots.containsKey(chunkFile.getName())){
+                    chunksScreenshots.put(chunkFile.getName(), new ArrayList<File>());
+                }
+                chunksScreenshots.get(chunkFile.getName()).add(screenshotFile);
+                fileCounter++;
+                screenshotFile = new File(folderPath + currentTime + NAME_SEPARATOR + fileCounter
+                        + MediaExtensionEnum.JPG.getExtensionStr());
+            }
+            if (chunksScreenshots.get(chunkFile.getName())== null){
+                System.out.println("" + fileCounter + "***************************************************************************" + folderPath);
+                System.out.println("" + chunksScreenshots.size() + "************************************* null folder path im chunk screenshots container ****************************************" + screenshotFile.getAbsolutePath());
+                System.out.println("*******************************************************************************" + chunkFile);
+            }
+            onScreenshotEndCreationListener.onEndScreenshotCreation();
+        }
+    };
 }

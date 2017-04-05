@@ -11,8 +11,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:indeterminate="false"
-        android:maxHeight="3dp"
-        android:minHeight="3dp"
+        android:maxHeight="2dp"
+        android:minHeight="2dp"
         android:progressDrawable="@drawable/video_progress"
         android:layout_marginTop="3dp"
         android:layout_alignParentTop="true"
@@ -20,18 +20,56 @@
         android:layout_alignParentEnd="true" />
 
     <ImageView
-        android:id="@+id/imageView"
-        android:layout_width="wrap_content"
-        android:layout_height="60dp"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:src="@android:color/transparent" />
-
-    <ImageView
         android:id="@+id/imageViewRecordButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/imageView"
-        android:layout_centerHorizontal="true"
-        app:srcCompat="@android:color/transparent" />
+        android:src="@android:color/transparent"
+        android:layout_above="@+id/scrollView2"
+        android:layout_centerHorizontal="true" />
+
+    <ScrollView
+        android:layout_width="wrap_content"
+        android:layout_height="85dp"
+        android:layout_gravity="bottom"
+        android:scrollbars="none"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true"
+        android:id="@+id/scrollView2">
+
+        <HorizontalScrollView
+            android:layout_width="wrap_content"
+            android:layout_height="80dp"
+            android:layout_gravity="bottom"
+            android:scrollbars="none">
+
+            <LinearLayout
+                android:id="@+id/id_gallery"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:orientation="horizontal" >
+            </LinearLayout>
+        </HorizontalScrollView>
+    </ScrollView>
+
+    <ImageButton
+        android:id="@+id/imageButtonRemoveVideo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:backgroundTint="@android:color/transparent"
+        android:src="@drawable/btn_remove_video"
+        android:layout_marginEnd="33dp"
+        android:layout_alignBottom="@+id/imageViewRecordButton"
+        android:layout_toStartOf="@+id/imageViewRecordButton" />
+
+    <ImageButton
+        android:id="@+id/imageButtonSaveVideo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:layout_marginStart="34dp"
+        android:layout_alignBottom="@+id/imageViewRecordButton"
+        android:layout_toEndOf="@+id/imageViewRecordButton" />
+
 </RelativeLayout>

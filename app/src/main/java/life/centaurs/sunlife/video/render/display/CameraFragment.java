@@ -4,23 +4,15 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
-import android.content.res.Configuration;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
-import android.hardware.Camera;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 
 import life.centaurs.sunlife.R;
@@ -28,12 +20,19 @@ import life.centaurs.sunlife.video.render.encoder.MediaAudioEncoder;
 import life.centaurs.sunlife.video.render.encoder.MediaEncoder;
 import life.centaurs.sunlife.video.render.encoder.MediaMuxerWrapper;
 import life.centaurs.sunlife.video.render.encoder.MediaVideoEncoder;
+import life.centaurs.sunlife.video.render.encoder.PhotoManager;
 import life.centaurs.sunlife.video.render.enums.CommandEnum;
-import life.centaurs.sunlife.video.render.enums.DeviceCamerasEnum;
 import life.centaurs.sunlife.video.render.enums.OrientationEnum;
 
+import static life.centaurs.sunlife.video.render.constants.DisplayConstants.DEPRECATION_ANNOTATION_MESs;
+import static life.centaurs.sunlife.video.render.constants.DisplayConstants.MUST_IMPL_ON_CAMERA_BUTTON_LISTENER_MESS;
+import static life.centaurs.sunlife.video.render.constants.DisplayConstants.TOUGH_LENGTH_TO_SWITCH_CAMERA;
+import static life.centaurs.sunlife.video.render.display.CameraNavigationFragment.screenshotAnimator;
 import static life.centaurs.sunlife.video.render.enums.CommandEnum.SWITCH_CAMERA;
-import static life.centaurs.sunlife.video.render.enums.OrientationEnum.*;
+import static life.centaurs.sunlife.video.render.enums.OrientationEnum.LANDSCAPE;
+import static life.centaurs.sunlife.video.render.enums.OrientationEnum.LANDSCAPE_REVERSE;
+import static life.centaurs.sunlife.video.render.enums.OrientationEnum.PORTRAIT;
+import static life.centaurs.sunlife.video.render.enums.OrientationEnum.PORTRAIT_REVERSE;
 import static life.centaurs.sunlife.video.render.enums.VideoSizeEnum.MEDIUM_SIZE;
 
 
@@ -41,50 +40,67 @@ public class CameraFragment extends Fragment {
 	private CameraGLView cameraPreviewDisplay;
 	private MediaMuxerWrapper mediaMuxerWrapper;
 	private boolean isRecording = false;
-	private int cameraId;
+	private static int cameraId;
+	private Handler handler = new Handler();
 	private Handler handlerVideo = new Handler();;
 	private Handler handlerAudio = new Handler();;
 	private Handler handlerMuxer = new Handler();;
 	private boolean videoEncoderIsReady = false;
 	private boolean audioEncoderIsReady = false;
-	private static OrientationEnum videoOrientationEnum = null;// get this value uses only getVideoOrientationEnum() method
+	private static OrientationEnum videoOrientationEnum = null;// use this field only by dint of getVideoOrientationEnum() method
 	private float touchDownX;
 	private float touchDownY;
 	private float moveX;
 	private float moveY;
-	private ChunksContainer chunksContainer;
+	public static ChunksContainer chunksContainer;
+	private PhotoManager photoManager;
+	public static File currentFile;
 
 	private FragmentsCommunicationListener fragmentsCommunicationListener;
-
-
 
 	public CameraFragment(int cameraId){
 		this.cameraId = cameraId;
 	}
 
-	@SuppressWarnings("deprecation")
+	@SuppressWarnings(DEPRECATION_ANNOTATION_MESs)
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
-		chunksContainer = new ChunksContainer(activity);
+		chunksContainer = new ChunksContainer(activity, onScreenshotEndCreationListener);
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
 			try {
 				fragmentsCommunicationListener = (FragmentsCommunicationListener) activity;
 			} catch (ClassCastException e) {
-				throw new ClassCastException(activity.toString() + " must implements OnCameraButtonListener");
+				throw new ClassCastException(activity.toString() + MUST_IMPL_ON_CAMERA_BUTTON_LISTENER_MESS);
 			}
 		}
+	}
+
+	public File getCurrentFile() {
+		return currentFile;
+	}
+
+	public void setCurrentFile(File currentFile) {
+		this.currentFile = currentFile;
+	}
+
+	public static ChunksContainer getChunksContainer() {
+		return chunksContainer;
+	}
+
+	public static int getCameraId() {
+		return cameraId;
 	}
 
 	@Override
 	public void onAttach(Context context) {
 		super.onAttach(context);
-		chunksContainer = new ChunksContainer(context);
+		chunksContainer = new ChunksContainer(context, onScreenshotEndCreationListener);
 		Activity activity = context instanceof Activity ? (Activity) context : null;
 		try {
 			fragmentsCommunicationListener = (FragmentsCommunicationListener) activity;
 		} catch (ClassCastException e){
-			throw new ClassCastException(context.toString() + " must implements OnCameraButtonListener");
+			throw new ClassCastException(context.toString() + MUST_IMPL_ON_CAMERA_BUTTON_LISTENER_MESS);
 		}
 	}
 
@@ -107,7 +123,7 @@ public class CameraFragment extends Fragment {
 								? (motionEvent.getX() - touchDownX) : (motionEvent.getX() - touchDownX) * (-1);
 						moveY = (motionEvent.getY() - touchDownY) > 0
 								? (motionEvent.getY() - touchDownY) : (motionEvent.getY() - touchDownY) * (-1);
-						if ((moveX) > 200){
+						if ((moveX) > TOUGH_LENGTH_TO_SWITCH_CAMERA){
 							fragmentsCommunicationListener.onClickButton(SWITCH_CAMERA);
 						}
 						break;
@@ -116,6 +132,7 @@ public class CameraFragment extends Fragment {
 			}
 		});
 		CameraGLView.setCameraId(cameraId);
+		photoManager = new PhotoManager(this, cameraPreviewDisplay);
 		return rootView;
 	}
 
@@ -157,54 +174,7 @@ public class CameraFragment extends Fragment {
 	}
 
 	public void takePhoto() {
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				Camera camera = cameraPreviewDisplay.getCamera();
-				Camera.Parameters parameters = camera.getParameters();
-				if(cameraId == DeviceCamerasEnum.BACK_CAMERA.getCAMERA_ID()){
-					parameters.setRotation(CameraFragment.getVideoOrientationEnum().getDegrees() <= PORTRAIT_REVERSE.getDegrees()
-							? CameraFragment.getVideoOrientationEnum().getDegrees() + LANDSCAPE_REVERSE.getDegrees()
-							: PORTRAIT.getDegrees());
-				} else {
-					parameters.setRotation(LANDSCAPE.getDegrees() - CameraFragment.getVideoOrientationEnum().getDegrees());
-				}
-				final File[] curFile = new File[1];
-				camera.setParameters(parameters);
-				camera.takePicture(null, null, new Camera.PictureCallback() {
-					@Override
-					public void onPictureTaken(byte[] data, Camera camera) {
-						byte[] imageBytes = data;
-						if (cameraId == DeviceCamerasEnum.FRONT_CAMERA.getCAMERA_ID()) {
-							Bitmap newImage = null;
-							Bitmap cameraBitmap = null;
-							if (data != null) {
-								cameraBitmap = BitmapFactory.decodeByteArray(data, 0, (data != null) ? data.length : 0);
-								if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-									Matrix mtx = new Matrix();
-									mtx.preScale(-1.0f, 1.0f);
-									newImage = Bitmap.createBitmap(cameraBitmap, 0, 0, cameraBitmap.getWidth(), cameraBitmap.getHeight(), mtx, true);
-								}
-							}
-							ByteArrayOutputStream stream = new ByteArrayOutputStream();
-							newImage.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-							imageBytes = stream.toByteArray();
-						}
-						try {
-							File file = mediaMuxerWrapper.getCaptureFile(Environment.DIRECTORY_MOVIES, ".jpg", "SL_Photo_");
-							curFile[0] = file;
-							FileOutputStream fos = new FileOutputStream(file);
-							fos.write(imageBytes);
-							fos.close();
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						cameraPreviewDisplay.restartPreview();
-						chunksContainer.setChunkFile(curFile[0]);
-					}
-				});
-			}
-		}).start();
+		photoManager.takePhoto();
 	}
 
 	private synchronized void startRecordVideo(){
@@ -236,7 +206,8 @@ public class CameraFragment extends Fragment {
 			@Override
 			public void run() {
 				try {
-					new MediaVideoEncoder(mediaMuxerWrapper, mediaEncoderListener, cameraPreviewDisplay.getVideoWidth(), cameraPreviewDisplay.getVideoHeight());
+					new MediaVideoEncoder(mediaMuxerWrapper, mediaEncoderListener
+							, cameraPreviewDisplay.getVideoWidth(), cameraPreviewDisplay.getVideoHeight());
 					mediaMuxerWrapper.prepareVideo();
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -281,7 +252,6 @@ public class CameraFragment extends Fragment {
 	protected void stopRecording() {
 		if (mediaMuxerWrapper != null) {
 			mediaMuxerWrapper.stopRecording();
-			chunksContainer.setChunkFile(new File(mediaMuxerWrapper.getOutputPath()));
 			mediaMuxerWrapper = null;
 		}
 	}
@@ -319,4 +289,12 @@ public class CameraFragment extends Fragment {
 			}
 		}
 	}
+
+	public static ChunksContainer.OnScreenshotEndCreationListener onScreenshotEndCreationListener
+			= new ChunksContainer.OnScreenshotEndCreationListener() {
+		@Override
+		public void onEndScreenshotCreation() {
+			screenshotAnimator.startScreenshotAnim(chunksContainer.getChunkScreenshots(currentFile));
+		}
+	};
 }

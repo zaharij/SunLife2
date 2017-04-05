@@ -2,7 +2,6 @@ package life.centaurs.sunlife.video.render.display;
 
 import android.app.FragmentTransaction;
 import android.content.Context;
-import android.graphics.Color;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
@@ -12,12 +11,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 
 import life.centaurs.sunlife.R;
+import life.centaurs.sunlife.activities.MainActivity;
+import life.centaurs.sunlife.squad.ActivitySquad;
 import life.centaurs.sunlife.video.render.enums.CommandEnum;
 import life.centaurs.sunlife.video.render.enums.DeviceCamerasEnum;
 import life.centaurs.sunlife.video.render.enums.MediaExtensionEnum;
 import life.centaurs.sunlife.video.render.enums.OrientationEnum;
 
-import static life.centaurs.sunlife.video.render.enums.OrientationEnum.*;
+import static life.centaurs.sunlife.constants.ActivitiesConstants.SPLASH_SCREEN_BACKGROUND_COLOR;
+import static life.centaurs.sunlife.video.render.enums.OrientationEnum.LANDSCAPE;
+import static life.centaurs.sunlife.video.render.enums.OrientationEnum.LANDSCAPE_REVERSE;
+import static life.centaurs.sunlife.video.render.enums.OrientationEnum.PORTRAIT;
+import static life.centaurs.sunlife.video.render.enums.OrientationEnum.PORTRAIT_REVERSE;
 
 public class CameraActivity extends AppCompatActivity implements SensorEventListener, FragmentsCommunicationListener {
     private SensorManager senSensorManager;
@@ -30,9 +35,6 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
     private static boolean timeIsOff = false;
     private static MediaExtensionEnum videoExtension;
     private static MediaExtensionEnum photoExtension;
-    public static ChunksContainer chunksContainer;
-
-
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -40,11 +42,9 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         setContentView(R.layout.activity_camera);
 
         View viewBackground = this.getWindow().getDecorView();
-        viewBackground.setBackgroundColor(Color.parseColor("#000000"));
+        viewBackground.setBackgroundColor(SPLASH_SCREEN_BACKGROUND_COLOR);
         videoExtension = MediaExtensionEnum.MP4;
         photoExtension = MediaExtensionEnum.JPG;
-
-        chunksContainer = new ChunksContainer(this);
 
         senSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
@@ -146,6 +146,9 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
     @Override
     public void onClickButton(CommandEnum commandEnum) {
         switch(commandEnum){
+            case REMOVE_CHUNKS_AND_BACK_TO_MAIN:
+                ActivitySquad.goFromCurrentActivityToNewActivity(this, MainActivity.class);
+                break;
             case SWITCH_CAMERA:
                 switchCamera();
                 break;

@@ -19,13 +19,14 @@ import static life.centaurs.sunlife.video.render.constants.DisplayConstants.MUXE
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.NO_PERMISSION_TO_WRITE_EXTERNAL_STORAGE;
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.UNSUPPORTED_ENCODER;
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.VIDEO_ENCODER_ALREADY_ADDED;
+import static life.centaurs.sunlife.video.render.display.CameraFragment.currentFile;
 
 public class MediaMuxerWrapper {
 	private final static String DATE_FORMAT_STR = "yyyy-MM-dd_HH-mm-ss.SSS";
 	private final static String FOLDER_NAME = "SunLifeMedia";
 	private final static String VIDEO_NAME_PREFIX = "SL_Video_";
 
-	private String outputPath;
+	public static volatile String outputPath;
 	private final MediaMuxer mediaMuxer;
 	private int encoderCount, startedCount;
 	private boolean isStarted;
@@ -39,7 +40,8 @@ public class MediaMuxerWrapper {
 	public MediaMuxerWrapper(String ext) throws IOException {
 		if (TextUtils.isEmpty(ext)) ext = CameraActivity.getVideoExtension().getExtensionStr();
 		try {
-			outputPath = getCaptureFile(Environment.DIRECTORY_MOVIES, ext, VIDEO_NAME_PREFIX).toString();
+			currentFile = getCaptureFile(Environment.DIRECTORY_MOVIES, ext, VIDEO_NAME_PREFIX);
+			outputPath = currentFile.toString();
 		} catch (final NullPointerException e) {
 			throw new RuntimeException(NO_PERMISSION_TO_WRITE_EXTERNAL_STORAGE);
 		}
@@ -48,7 +50,7 @@ public class MediaMuxerWrapper {
 		isStarted = false;
 	}
 
-	public String getOutputPath() {
+	public static String getOutputPath() {
 		return outputPath;
 	}
 

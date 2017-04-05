@@ -14,11 +14,17 @@ import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedExceptio
  * VideoEditor
  * The purpose of this class is video editing
  */
-public class VideoEditor {
+public final class VideoEditor {
     private FFmpeg ffmpeg;
     private Handler handler = new Handler();
+    private OnFfmpegSuccessListener onFfmpegSuccessListener;
 
-    public VideoEditor (Context context){
+    public interface OnFfmpegSuccessListener{
+        void onSuccess();
+    }
+
+    public VideoEditor (Context context, OnFfmpegSuccessListener onFfmpegSuccessListener){
+        this.onFfmpegSuccessListener = onFfmpegSuccessListener;
         this.ffmpeg = FFmpeg.getInstance(context);
         loadFFmpegBinary();
     }
@@ -34,7 +40,8 @@ public class VideoEditor {
                 public void onFailure() {}
 
                 @Override
-                public void onSuccess() {}
+                public void onSuccess() {
+                }
 
                 @Override
                 public void onFinish() {}
@@ -45,41 +52,26 @@ public class VideoEditor {
     }
 
     public void execFFmpegBinary(final String[] command) {
-
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    ffmpeg.execute(command, new ExecuteBinaryResponseHandler() {
-                        @Override
-                        public void onFailure(String s) {
-                        }
-
-                        @Override
-                        public void onSuccess(String s) {
-                        }
-
-                        @Override
-                        public void onProgress(String s) {
-                        }
-
-                        @Override
-                        public void onStart() {
-                        }
-
-                        @Override
-                        public void onFinish() {
-                        }
-                    });
-                } catch (FFmpegCommandAlreadyRunningException e) {
+        try {
+            ffmpeg.execute(command, new ExecuteBinaryResponseHandler() {
+                @Override
+                public void onFailure(String s) {
                 }
-                handler.post(new Runnable() {
-                    @Override
-                    public void run() {
-
-                    }
-                });
-            }
-        }).start();
+                @Override
+                public void onSuccess(String s) {
+                    onFfmpegSuccessListener.onSuccess();
+                }
+                @Override
+                public void onProgress(String s) {
+                }
+                @Override
+                public void onStart() {
+                }
+                @Override
+                public void onFinish() {
+                }
+            });
+        } catch (FFmpegCommandAlreadyRunningException e) {
+        }
     }
 }

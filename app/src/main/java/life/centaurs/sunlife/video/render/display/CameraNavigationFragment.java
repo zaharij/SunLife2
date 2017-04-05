@@ -12,13 +12,24 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+
+import java.io.File;
 
 import life.centaurs.sunlife.R;
 
-import static life.centaurs.sunlife.video.render.constants.DisplayConstants.*;
-import static life.centaurs.sunlife.video.render.enums.CommandEnum.*;
+import static life.centaurs.sunlife.video.render.constants.DisplayConstants.MIN_VIDEO_TIME_IN_MILLIS;
+import static life.centaurs.sunlife.video.render.constants.DisplayConstants.PHOTO_PROGRESS_STATUS;
+import static life.centaurs.sunlife.video.render.constants.DisplayConstants.TIME_PHOTO_BUTTON_ACTIVE_IN_MILLIS;
+import static life.centaurs.sunlife.video.render.constants.DisplayConstants.VIDEO_PROGRESS_TIME;
+import static life.centaurs.sunlife.video.render.display.CameraFragment.chunksContainer;
+import static life.centaurs.sunlife.video.render.enums.CommandEnum.REMOVE_CHUNKS_AND_BACK_TO_MAIN;
+import static life.centaurs.sunlife.video.render.enums.CommandEnum.START_RECORDING;
+import static life.centaurs.sunlife.video.render.enums.CommandEnum.STOP_RECORDING;
+import static life.centaurs.sunlife.video.render.enums.CommandEnum.TAKE_PICTURE;
 
 
 public class CameraNavigationFragment extends Fragment implements ProgressBarManager.OnProgressListener {
@@ -33,11 +44,16 @@ public class CameraNavigationFragment extends Fragment implements ProgressBarMan
     private AnimationDrawable animationRecordButton;
     private long touchDownTime = 0;
     private long resultTime;
+    public static ScreenshotAnimator screenshotAnimator;
+    private Context context;
+    private LinearLayout mGallery;
+    private ImageButton imageButtonRemoveVideo, imageButtonSaveVideo;
 
     @SuppressWarnings("deprecation")
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
+        context = activity;
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             try {
                 fragmentsCommunicationListener = (FragmentsCommunicationListener) activity;
@@ -50,6 +66,7 @@ public class CameraNavigationFragment extends Fragment implements ProgressBarMan
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
+        context = context;
         Activity activity = context instanceof Activity ? (Activity) context : null;
         try {
             fragmentsCommunicationListener = (FragmentsCommunicationListener) activity;
@@ -65,10 +82,20 @@ public class CameraNavigationFragment extends Fragment implements ProgressBarMan
         progressBarHorizontal = (ProgressBar) rootView.findViewById(R.id.progressBarHorizontal);
         progressBarManager = new ProgressBarManager(progressBarHorizontal, VIDEO_PROGRESS_TIME, this);
 
+        imageButtonRemoveVideo = (ImageButton) rootView.findViewById(R.id.imageButtonRemoveVideo);
+        imageButtonRemoveVideo.setOnClickListener(onClickListenerVideoChunks);
+
+        imageButtonSaveVideo = (ImageButton) rootView.findViewById(R.id.imageButtonSaveVideo);
+        imageButtonSaveVideo.setOnClickListener(onClickListenerVideoChunks);
+
         imageViewRecordButton = (ImageView) rootView.findViewById(R.id.imageViewRecordButton);
         imageViewRecordButton.setOnTouchListener(onRecordButtonTouchListener);
         imageViewRecordButton.setBackgroundResource(R.mipmap.record_btn_0);
-        progressBarManager.execute();
+
+        mGallery = (LinearLayout) rootView.findViewById(R.id.id_gallery);
+        screenshotAnimator = new ScreenshotAnimator(context, mGallery);
+
+        progressBarManager.startProgressBar();
         return rootView;
     }
 
@@ -88,6 +115,21 @@ public class CameraNavigationFragment extends Fragment implements ProgressBarMan
     public void startActivity(Intent intent) {
         super.startActivity(intent);
     }
+
+    View.OnClickListener onClickListenerVideoChunks = new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+            switch(view.getId()){
+                case R.id.imageButtonRemoveVideo:
+                    removeChunks();
+                    fragmentsCommunicationListener.onClickButton(REMOVE_CHUNKS_AND_BACK_TO_MAIN);
+                    break;
+                case R.id.imageButtonSaveVideo:
+
+                    break;
+            }
+        }
+    };
 
     private final View.OnTouchListener onRecordButtonTouchListener = new View.OnTouchListener() {
         @Override
@@ -118,6 +160,7 @@ public class CameraNavigationFragment extends Fragment implements ProgressBarMan
                             progressBarManager.setProgressStatus(progressBarManager.getProgressStatus() + PHOTO_PROGRESS_STATUS);
                             fragmentsCommunicationListener.onClickButton(TAKE_PICTURE);
                         }
+                        imageButtonSaveVideo.setImageResource(R.drawable.btn_save_video);
                         break;
                 }
             }
@@ -191,10 +234,25 @@ public class CameraNavigationFragment extends Fragment implements ProgressBarMan
 
     @Override
     public void onEndProgress() {
-        isRecording = false;
+        if (isRecording){
+            isRecording = false;
+            startRecordingVisualisation(isRecording);
+            fragmentsCommunicationListener.onClickButton(STOP_RECORDING);
+        }
         imageViewRecordButton.setBackgroundResource(R.mipmap.record_btn_0);
-        startRecordingVisualisation(isRecording);
-        fragmentsCommunicationListener.onClickButton(STOP_RECORDING);
         CameraActivity.setTimeIsOff(true);
+    }
+
+    /**
+     * removes all video chunks from SD
+     */
+    private void removeChunks(){
+        for(int i = 0; i < chunksContainer.getChunksFiles().size(); i++){
+            File currentVideoChunk = chunksContainer.getChunksFiles().get(i);
+            for(File currentScreenshotChunk: chunksContainer.getChunkScreenshots(currentVideoChunk)){
+                currentScreenshotChunk.delete();
+            }
+            currentVideoChunk.delete();
+        }
     }
 }
