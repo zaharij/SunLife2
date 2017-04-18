@@ -40,7 +40,7 @@ public class ScreenshotAnimator {
                 }
             });
             mGallery.addView(view);
-            ChunksContainer.screenshotNumberNameIsTaken = false;
+            ChunksManager.screenshotNumberNameIsTaken = false;
         }
     }
 

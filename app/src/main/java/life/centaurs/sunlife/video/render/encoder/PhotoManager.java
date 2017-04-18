@@ -7,7 +7,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.hardware.Camera;
-import android.os.Environment;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -18,8 +17,13 @@ import life.centaurs.sunlife.video.render.display.CameraGLView;
 import life.centaurs.sunlife.video.render.enums.DeviceCamerasEnum;
 import life.centaurs.sunlife.video.render.enums.MediaExtensionEnum;
 
-import static life.centaurs.sunlife.video.render.display.CameraFragment.*;
-import static life.centaurs.sunlife.video.render.enums.OrientationEnum.*;
+import static life.centaurs.sunlife.video.render.constants.DisplayConstants.getCaptureFile;
+import static life.centaurs.sunlife.video.render.display.CameraFragment.chunksManager;
+import static life.centaurs.sunlife.video.render.display.CameraFragment.currentFile;
+import static life.centaurs.sunlife.video.render.enums.OrientationEnum.LANDSCAPE;
+import static life.centaurs.sunlife.video.render.enums.OrientationEnum.LANDSCAPE_REVERSE;
+import static life.centaurs.sunlife.video.render.enums.OrientationEnum.PORTRAIT;
+import static life.centaurs.sunlife.video.render.enums.OrientationEnum.PORTRAIT_REVERSE;
 
 public class PhotoManager {
     private static final String PHOTO_NAME_PREFIX = "SL_Photo_";
@@ -29,6 +33,10 @@ public class PhotoManager {
     public PhotoManager(Fragment fragment, CameraGLView cameraPreviewDisplay) {
         this.fragment = fragment;
         this.cameraPreviewDisplay = cameraPreviewDisplay;
+    }
+
+    public static String getPhotoNamePrefix() {
+        return PHOTO_NAME_PREFIX;
     }
 
     public void takePhoto(){
@@ -66,8 +74,7 @@ public class PhotoManager {
                             imageBytes = stream.toByteArray();
                         }
                         try {
-                            File file = MediaMuxerWrapper.getCaptureFile(Environment.DIRECTORY_MOVIES
-                                    , MediaExtensionEnum.JPG.getExtensionStr(), PHOTO_NAME_PREFIX);
+                            File file = getCaptureFile(MediaExtensionEnum.JPG.getExtensionStr(), PHOTO_NAME_PREFIX);
                             curFile[0] = file;
                             FileOutputStream fos = new FileOutputStream(file);
                             fos.write(imageBytes);
@@ -77,7 +84,7 @@ public class PhotoManager {
                         }
                         cameraPreviewDisplay.restartPreview();
                         currentFile = curFile[0];
-                        chunksContainer.setChunkFile(currentFile);
+                        chunksManager.setChunkFile(currentFile);
                     }
                 });
             //}

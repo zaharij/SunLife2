@@ -25,7 +25,9 @@ import static life.centaurs.sunlife.video.render.constants.DisplayConstants.MIN_
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.PHOTO_PROGRESS_STATUS;
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.TIME_PHOTO_BUTTON_ACTIVE_IN_MILLIS;
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.VIDEO_PROGRESS_TIME;
-import static life.centaurs.sunlife.video.render.display.CameraFragment.chunksContainer;
+import static life.centaurs.sunlife.video.render.constants.DisplayConstants.getMediaDir;
+import static life.centaurs.sunlife.video.render.display.CameraFragment.chunksManager;
+import static life.centaurs.sunlife.video.render.encoder.PhotoManager.getPhotoNamePrefix;
 import static life.centaurs.sunlife.video.render.enums.CommandEnum.REMOVE_CHUNKS_AND_BACK_TO_MAIN;
 import static life.centaurs.sunlife.video.render.enums.CommandEnum.START_RECORDING;
 import static life.centaurs.sunlife.video.render.enums.CommandEnum.STOP_RECORDING;
@@ -122,10 +124,14 @@ public class CameraNavigationFragment extends Fragment implements ProgressBarMan
             switch(view.getId()){
                 case R.id.imageButtonRemoveVideo:
                     removeChunks();
+                    progressBarManager.nullProgressBarStatus();
+                    CameraActivity.setTimeIsOff(false);
+                    screenshotAnimator = null;
+                    CameraFragment.nullStatic();
                     fragmentsCommunicationListener.onClickButton(REMOVE_CHUNKS_AND_BACK_TO_MAIN);
                     break;
                 case R.id.imageButtonSaveVideo:
-
+                    chunksManager.makeFullVideo();
                     break;
             }
         }
@@ -154,7 +160,6 @@ public class CameraNavigationFragment extends Fragment implements ProgressBarMan
                             } else {
                                 minVideoCountDown();
                             }
-
                         } else {
                             recordButtonClick(R.drawable.anim_photo);
                             progressBarManager.setProgressStatus(progressBarManager.getProgressStatus() + PHOTO_PROGRESS_STATUS);
@@ -226,7 +231,7 @@ public class CameraNavigationFragment extends Fragment implements ProgressBarMan
 
     protected void startRecordingVisualisation(boolean isRecording) {
         if (isRecording) {
-            progressBarManager.progress();
+            progressBarManager.startProgress();
         } else {
             progressBarManager.pauseProgress();
         }
@@ -240,6 +245,7 @@ public class CameraNavigationFragment extends Fragment implements ProgressBarMan
             fragmentsCommunicationListener.onClickButton(STOP_RECORDING);
         }
         imageViewRecordButton.setBackgroundResource(R.mipmap.record_btn_0);
+        imageButtonSaveVideo.setImageResource(R.drawable.btn_save_video);
         CameraActivity.setTimeIsOff(true);
     }
 
@@ -247,12 +253,32 @@ public class CameraNavigationFragment extends Fragment implements ProgressBarMan
      * removes all video chunks from SD
      */
     private void removeChunks(){
-        for(int i = 0; i < chunksContainer.getChunksFiles().size(); i++){
-            File currentVideoChunk = chunksContainer.getChunksFiles().get(i);
-            for(File currentScreenshotChunk: chunksContainer.getChunkScreenshots(currentVideoChunk)){
-                currentScreenshotChunk.delete();
+        File soundFileToDelete = new File (getMediaDir().getAbsolutePath().concat("/").concat(ChoseSound.getSound()));
+        if (soundFileToDelete.exists()){
+            soundFileToDelete.delete();
+        }
+        for(File currentFile: chunksManager.getChunksFiles()) {
+            if (currentFile.exists()) {
+                for (File currentScreenshotChunk : chunksManager.getChunkScreenshots(currentFile)) {
+                    currentScreenshotChunk.delete();
+                }
+                if (currentFile.getName().contains(getPhotoNamePrefix())) {
+                    File fileToDelete = new File(currentFile.getAbsolutePath()
+                            .concat(CameraActivity.getVideoExtension().getExtensionStr()));
+                    if (fileToDelete.exists()) {
+                        fileToDelete.delete();
+                    }
+                }
+                if (currentFile.exists()) {
+                    currentFile.delete();
+                }
+                if (chunksManager.getChunkListFile().exists()) {
+                    chunksManager.getChunkListFile().delete();
+                }
+                if (chunksManager.getFullVideoFile().exists()) {
+                    chunksManager.getFullVideoFile().delete();
+                }
             }
-            currentVideoChunk.delete();
         }
     }
 }

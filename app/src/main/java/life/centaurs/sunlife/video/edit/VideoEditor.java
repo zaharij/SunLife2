@@ -17,14 +17,12 @@ import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedExceptio
 public final class VideoEditor {
     private FFmpeg ffmpeg;
     private Handler handler = new Handler();
-    private OnFfmpegSuccessListener onFfmpegSuccessListener;
 
     public interface OnFfmpegSuccessListener{
         void onSuccess();
     }
 
-    public VideoEditor (Context context, OnFfmpegSuccessListener onFfmpegSuccessListener){
-        this.onFfmpegSuccessListener = onFfmpegSuccessListener;
+    public VideoEditor (Context context){
         this.ffmpeg = FFmpeg.getInstance(context);
         loadFFmpegBinary();
     }
@@ -51,27 +49,36 @@ public final class VideoEditor {
         }
     }
 
-    public void execFFmpegBinary(final String[] command) {
-        try {
-            ffmpeg.execute(command, new ExecuteBinaryResponseHandler() {
-                @Override
-                public void onFailure(String s) {
+
+
+    public void execFFmpegBinary(final String[] command, final OnFfmpegSuccessListener onFfmpegSuccessListener) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    ffmpeg.execute(command, new ExecuteBinaryResponseHandler() {
+                        @Override
+                        public void onFailure(String s) {
+                        }
+                        @Override
+                        public void onSuccess(String s) {
+                            if (onFfmpegSuccessListener != null){
+                                onFfmpegSuccessListener.onSuccess();
+                            }
+                        }
+                        @Override
+                        public void onProgress(String s) {
+                        }
+                        @Override
+                        public void onStart() {
+                        }
+                        @Override
+                        public void onFinish() {
+                        }
+                    });
+                } catch (FFmpegCommandAlreadyRunningException e) {
                 }
-                @Override
-                public void onSuccess(String s) {
-                    onFfmpegSuccessListener.onSuccess();
-                }
-                @Override
-                public void onProgress(String s) {
-                }
-                @Override
-                public void onStart() {
-                }
-                @Override
-                public void onFinish() {
-                }
-            });
-        } catch (FFmpegCommandAlreadyRunningException e) {
-        }
+            }
+        }).start();
     }
 }

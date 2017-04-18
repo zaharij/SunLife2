@@ -29,7 +29,11 @@ public class MediaVideoEncoder extends MediaEncoder {
 		renderHandler = RenderHandler.createHandler(TAG);
 	}
 
-	public boolean frameAvailableSoon(final float[] tex_matrix) {
+    public static int getFrameRate() {
+        return FRAME_RATE;
+    }
+
+    public boolean frameAvailableSoon(final float[] tex_matrix) {
 		boolean result;
 		if (result = super.frameAvailableSoon())
 			renderHandler.draw(tex_matrix);

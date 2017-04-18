@@ -1,5 +1,11 @@
 package life.centaurs.sunlife.video.render.constants;
 
+import android.os.Environment;
+
+import org.joda.time.DateTime;
+
+import java.io.File;
+
 import life.centaurs.sunlife.video.render.display.ProgressBarManager;
 
 public final class DisplayConstants {
@@ -41,16 +47,19 @@ public final class DisplayConstants {
     public final static int SCREENSHOT_NAME_START_COUNTER = 1;
     public final static int SCREENSHOTS_FRAMES_PER_SECOND = 2;
     public final static int SCREENSHOT_FRAME_CHANGE_DURATION = 1000 / SCREENSHOTS_FRAMES_PER_SECOND;
+    public final static int SCREENSHOT_VIDEO_DURATION = 3;//in seconds
+    public final static int SCREENSHOTS_NUMBER = SCREENSHOT_VIDEO_DURATION * SCREENSHOTS_FRAMES_PER_SECOND;
 
-    private static int timeVideoProgressInSeconds = 45; //set hear time for VIDEO_PROGRESS_TIME in seconds
+    private static int timeVideoProgressInSeconds = 60; //set hear time for VIDEO_PROGRESS_TIME in seconds
+    public final static int PROGRESS_VIDEO_TIME_KOEF = 10;
     private static int setProgressVideoTime(int timeInSeconds){
-        return timeInSeconds * 10;
+        return timeInSeconds * PROGRESS_VIDEO_TIME_KOEF;
     }
     public final static int VIDEO_PROGRESS_TIME = setProgressVideoTime(timeVideoProgressInSeconds);
 
-    private static int timePhotoProgress = 3;// set time for photo in seconds
+    public final static int TIME_PHOTO_PROGRESS = 3;// set time for photo in seconds
     private static int setProgressPhoto(){
-        return (ProgressBarManager.getProgressStatusMax() * timePhotoProgress) / timeVideoProgressInSeconds;
+        return (ProgressBarManager.getProgressStatusMax() * TIME_PHOTO_PROGRESS) / timeVideoProgressInSeconds;
     }
     public final static int PHOTO_PROGRESS_STATUS = setProgressPhoto();
 
@@ -59,4 +68,34 @@ public final class DisplayConstants {
 
     public final static int SCREENSHOT_WIDTH = 160;
     public final static int SCREENSHOT_HEIGHT = 284;
+
+    public final static String[] ASSETS_SOUNDS_ARRAY = new String[]{"vitomsky_1.mp3", "vitomsky_2.mp3", "vitomsky_3.mp3"};
+    public final static String FOLDER_NAME = "SunLifeMedia";
+
+    private final static String DATE_FORMAT_STR = "yyyy-MM-dd_HH-mm-ss.SSS";
+    /**
+     * generate output file
+     * @param ext .mp4(.m4a for audio) or .png
+     * @return return null when this app has no writing permission to external storage.
+     */
+    public static final File getCaptureFile(final String ext, String namePrefix) {
+        final File dir = getMediaDir();
+        dir.mkdirs();
+        if (dir.canWrite()) {
+            return new File(dir, namePrefix.concat(getDateTimeString()).concat(ext));
+        }
+        return null;
+    }
+
+    public static File getMediaDir(){
+        return new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES), FOLDER_NAME);
+    }
+
+    /**
+     * returns current DateTime (String)
+     * @return
+     */
+    private static String getDateTimeString(){
+        return new DateTime(DateTime.now()).toString(DATE_FORMAT_STR);
+    }
 }

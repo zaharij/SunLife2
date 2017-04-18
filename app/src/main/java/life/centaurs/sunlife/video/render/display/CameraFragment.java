@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 
 import life.centaurs.sunlife.R;
+import life.centaurs.sunlife.video.edit.VideoEditor;
 import life.centaurs.sunlife.video.render.encoder.MediaAudioEncoder;
 import life.centaurs.sunlife.video.render.encoder.MediaEncoder;
 import life.centaurs.sunlife.video.render.encoder.MediaMuxerWrapper;
@@ -47,14 +48,15 @@ public class CameraFragment extends Fragment {
 	private Handler handlerMuxer = new Handler();;
 	private boolean videoEncoderIsReady = false;
 	private boolean audioEncoderIsReady = false;
-	private static OrientationEnum videoOrientationEnum = null;// use this field only by dint of getVideoOrientationEnum() method
 	private float touchDownX;
 	private float touchDownY;
 	private float moveX;
 	private float moveY;
-	public static ChunksContainer chunksContainer;
 	private PhotoManager photoManager;
+	public static ChunksManager chunksManager;
+	private static OrientationEnum videoOrientationEnum = null;// use this field only by dint of getVideoOrientationEnum() method
 	public static File currentFile;
+	public static VideoEditor videoEditor;
 
 	private FragmentsCommunicationListener fragmentsCommunicationListener;
 
@@ -66,7 +68,8 @@ public class CameraFragment extends Fragment {
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
-		chunksContainer = new ChunksContainer(activity, onScreenshotEndCreationListener);
+		videoEditor = new VideoEditor(activity);
+		chunksManager = new ChunksManager(onScreenshotEndCreationListener);
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
 			try {
 				fragmentsCommunicationListener = (FragmentsCommunicationListener) activity;
@@ -84,8 +87,8 @@ public class CameraFragment extends Fragment {
 		this.currentFile = currentFile;
 	}
 
-	public static ChunksContainer getChunksContainer() {
-		return chunksContainer;
+	public static ChunksManager getChunksManager() {
+		return chunksManager;
 	}
 
 	public static int getCameraId() {
@@ -95,13 +98,18 @@ public class CameraFragment extends Fragment {
 	@Override
 	public void onAttach(Context context) {
 		super.onAttach(context);
-		chunksContainer = new ChunksContainer(context, onScreenshotEndCreationListener);
+		chunksManager = new ChunksManager(onScreenshotEndCreationListener);
 		Activity activity = context instanceof Activity ? (Activity) context : null;
 		try {
 			fragmentsCommunicationListener = (FragmentsCommunicationListener) activity;
 		} catch (ClassCastException e){
 			throw new ClassCastException(context.toString() + MUST_IMPL_ON_CAMERA_BUTTON_LISTENER_MESS);
 		}
+	}
+
+	public static void nullStatic(){
+		chunksManager = null;
+		currentFile = null;
 	}
 
 	@Override
@@ -290,11 +298,11 @@ public class CameraFragment extends Fragment {
 		}
 	}
 
-	public static ChunksContainer.OnScreenshotEndCreationListener onScreenshotEndCreationListener
-			= new ChunksContainer.OnScreenshotEndCreationListener() {
+	public static ChunksManager.OnScreenshotEndCreationListener onScreenshotEndCreationListener
+			= new ChunksManager.OnScreenshotEndCreationListener() {
 		@Override
 		public void onEndScreenshotCreation() {
-			screenshotAnimator.startScreenshotAnim(chunksContainer.getChunkScreenshots(currentFile));
+			screenshotAnimator.startScreenshotAnim(chunksManager.getChunkScreenshots(currentFile));
 		}
 	};
 }

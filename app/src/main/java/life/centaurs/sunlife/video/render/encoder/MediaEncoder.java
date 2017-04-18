@@ -10,7 +10,7 @@ import java.nio.ByteBuffer;
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.FORMAT_CHANGED_TWICE_MESSAGE;
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.IS_NULL_MESSAGE;
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.MUXER_HAS_NOT_STARTED_MESSAGE;
-import static life.centaurs.sunlife.video.render.display.CameraFragment.chunksContainer;
+import static life.centaurs.sunlife.video.render.display.CameraFragment.chunksManager;
 import static life.centaurs.sunlife.video.render.display.CameraFragment.currentFile;
 
 public abstract class MediaEncoder implements Runnable {
@@ -93,7 +93,7 @@ public abstract class MediaEncoder implements Runnable {
 	           	signalEndOfInputStream();
 	           	drain();
 	           	release();
-				chunksContainer.setChunkFile(currentFile);
+				chunksManager.setChunkFile(currentFile);
 	           	break;
 	        }
 	        if (localRequestDrain) {

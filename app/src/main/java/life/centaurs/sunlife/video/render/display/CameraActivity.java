@@ -27,14 +27,15 @@ import static life.centaurs.sunlife.video.render.enums.OrientationEnum.PORTRAIT_
 public class CameraActivity extends AppCompatActivity implements SensorEventListener, FragmentsCommunicationListener {
     private SensorManager senSensorManager;
     private Sensor senAccelerometer;
-    private static OrientationEnum orientationEnum = PORTRAIT;
     private CameraFragment cameraFragment;
     private CameraNavigationFragment cameraNavigationFragment;
     private int cameraId = DeviceCamerasEnum.BACK_CAMERA.getCAMERA_ID();
     private FragmentTransaction transaction;
+    private static OrientationEnum orientationEnum = PORTRAIT;
     private static boolean timeIsOff = false;
     private static MediaExtensionEnum videoExtension;
     private static MediaExtensionEnum photoExtension;
+    private ChoseSound choseSound;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
@@ -49,6 +50,9 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         senSensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         senAccelerometer = senSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
         senSensorManager.registerListener(this, senAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+
+        choseSound = new ChoseSound(this);
+        choseSound.chooseAndCopyAssetsSoundToSd();
 
         cameraFragment = new CameraFragment(cameraId);
         transaction = getFragmentManager().beginTransaction();
