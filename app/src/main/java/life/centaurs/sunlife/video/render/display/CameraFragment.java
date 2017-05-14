@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.IOException;
 
 import life.centaurs.sunlife.R;
-import life.centaurs.sunlife.video.edit.VideoEditor;
 import life.centaurs.sunlife.video.render.encoder.MediaAudioEncoder;
 import life.centaurs.sunlife.video.render.encoder.MediaEncoder;
 import life.centaurs.sunlife.video.render.encoder.MediaMuxerWrapper;
@@ -27,14 +26,10 @@ import life.centaurs.sunlife.video.render.enums.OrientationEnum;
 
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.DEPRECATION_ANNOTATION_MESs;
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.MUST_IMPL_ON_CAMERA_BUTTON_LISTENER_MESS;
+import static life.centaurs.sunlife.video.render.constants.DisplayConstants.SCREEN_TOUCH_TIME;
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.TOUGH_LENGTH_TO_SWITCH_CAMERA;
-import static life.centaurs.sunlife.video.render.display.CameraNavigationFragment.screenshotAnimator;
+import static life.centaurs.sunlife.video.render.constants.DisplayConstants.VIDEO_SIZE;
 import static life.centaurs.sunlife.video.render.enums.CommandEnum.SWITCH_CAMERA;
-import static life.centaurs.sunlife.video.render.enums.OrientationEnum.LANDSCAPE;
-import static life.centaurs.sunlife.video.render.enums.OrientationEnum.LANDSCAPE_REVERSE;
-import static life.centaurs.sunlife.video.render.enums.OrientationEnum.PORTRAIT;
-import static life.centaurs.sunlife.video.render.enums.OrientationEnum.PORTRAIT_REVERSE;
-import static life.centaurs.sunlife.video.render.enums.VideoSizeEnum.MEDIUM_SIZE;
 
 
 public class CameraFragment extends Fragment {
@@ -53,10 +48,9 @@ public class CameraFragment extends Fragment {
 	private float moveX;
 	private float moveY;
 	private PhotoManager photoManager;
-	public static ChunksManager chunksManager;
 	private static OrientationEnum videoOrientationEnum = null;// use this field only by dint of getVideoOrientationEnum() method
 	public static File currentFile;
-	public static VideoEditor videoEditor;
+	private static long lastScreenTouch = 0;
 
 	private FragmentsCommunicationListener fragmentsCommunicationListener;
 
@@ -68,8 +62,6 @@ public class CameraFragment extends Fragment {
 	@Override
 	public void onAttach(Activity activity) {
 		super.onAttach(activity);
-		videoEditor = new VideoEditor(activity);
-		chunksManager = new ChunksManager(onScreenshotEndCreationListener);
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
 			try {
 				fragmentsCommunicationListener = (FragmentsCommunicationListener) activity;
@@ -87,10 +79,6 @@ public class CameraFragment extends Fragment {
 		this.currentFile = currentFile;
 	}
 
-	public static ChunksManager getChunksManager() {
-		return chunksManager;
-	}
-
 	public static int getCameraId() {
 		return cameraId;
 	}
@@ -98,7 +86,6 @@ public class CameraFragment extends Fragment {
 	@Override
 	public void onAttach(Context context) {
 		super.onAttach(context);
-		chunksManager = new ChunksManager(onScreenshotEndCreationListener);
 		Activity activity = context instanceof Activity ? (Activity) context : null;
 		try {
 			fragmentsCommunicationListener = (FragmentsCommunicationListener) activity;
@@ -107,42 +94,45 @@ public class CameraFragment extends Fragment {
 		}
 	}
 
-	public static void nullStatic(){
-		chunksManager = null;
-		currentFile = null;
-	}
-
 	@Override
 	public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
 		final View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 		cameraPreviewDisplay = (CameraGLView)rootView.findViewById(R.id.cameraView);
-		cameraPreviewDisplay.setVideoSize(MEDIUM_SIZE);
-		cameraPreviewDisplay.setOnTouchListener(new View.OnTouchListener() {
-			@Override
-			public boolean onTouch(View view, MotionEvent motionEvent) {
-				switch (motionEvent.getAction()) {
-					case MotionEvent.ACTION_DOWN:
-						touchDownX= motionEvent.getX();
-						touchDownY = motionEvent.getY();
-						break;
-					case MotionEvent.ACTION_UP:
-					case MotionEvent.ACTION_CANCEL:
-						moveX = (motionEvent.getX() - touchDownX) > 0
-								? (motionEvent.getX() - touchDownX) : (motionEvent.getX() - touchDownX) * (-1);
-						moveY = (motionEvent.getY() - touchDownY) > 0
-								? (motionEvent.getY() - touchDownY) : (motionEvent.getY() - touchDownY) * (-1);
-						if ((moveX) > TOUGH_LENGTH_TO_SWITCH_CAMERA){
-							fragmentsCommunicationListener.onClickButton(SWITCH_CAMERA);
-						}
-						break;
-				}
-				return true;
-			}
-		});
+		cameraPreviewDisplay.setVideoSize(VIDEO_SIZE);
+		cameraPreviewDisplay.setOnTouchListener(screenTouchListener);
 		CameraGLView.setCameraId(cameraId);
 		photoManager = new PhotoManager(this, cameraPreviewDisplay);
 		return rootView;
 	}
+
+	View.OnTouchListener screenTouchListener = new View.OnTouchListener() {
+		@Override
+		public boolean onTouch(View view, MotionEvent motionEvent) {
+            if (!CameraNavigationFragment.isProcessing()) {
+                long currentTouchTime = System.currentTimeMillis();
+                switch (motionEvent.getAction()) {
+                    case MotionEvent.ACTION_DOWN:
+                        touchDownX = motionEvent.getX();
+                        touchDownY = motionEvent.getY();
+                        break;
+                    case MotionEvent.ACTION_UP:
+                    case MotionEvent.ACTION_CANCEL:
+                        if ((currentTouchTime - lastScreenTouch) > SCREEN_TOUCH_TIME) {
+                            lastScreenTouch = currentTouchTime;
+                            moveX = (motionEvent.getX() - touchDownX) > 0
+                                    ? (motionEvent.getX() - touchDownX) : (motionEvent.getX() - touchDownX) * (-1);
+                            moveY = (motionEvent.getY() - touchDownY) > 0
+                                    ? (motionEvent.getY() - touchDownY) : (motionEvent.getY() - touchDownY) * (-1);
+                            if ((moveX) > TOUGH_LENGTH_TO_SWITCH_CAMERA) {
+                                fragmentsCommunicationListener.onClickButton(SWITCH_CAMERA);
+                            }
+                        }
+                        break;
+                }
+            }
+			return true;
+		}
+	};
 
 	@Override
 	public void onResume() {
@@ -165,9 +155,11 @@ public class CameraFragment extends Fragment {
 	public void onClickButton(CommandEnum commandEnum) {
 		switch (commandEnum) {
 			case TAKE_PICTURE:
+				setVideoOrientationEnum();
 				takePhoto();
 				break;
 			case START_RECORDING:
+				setVideoOrientationEnum();
 				startRecording();
 				break;
 			case STOP_RECORDING:
@@ -176,9 +168,17 @@ public class CameraFragment extends Fragment {
 		}
 	}
 
+	public static OrientationEnum getRealVideoOrientationEnum(){
+		return videoOrientationEnum;
+	}
+
 	public static OrientationEnum getVideoOrientationEnum(){
 		setVideoOrientationEnum();
 		return videoOrientationEnum;
+	}
+
+	public static void setNullVideoOrientationEnum(){
+		videoOrientationEnum = null;
 	}
 
 	public void takePhoto() {
@@ -225,7 +225,7 @@ public class CameraFragment extends Fragment {
 					public void run() {
 						videoEncoderIsReady = true;
 						if (audioEncoderIsReady && videoEncoderIsReady);
-							startRecordVideo();
+						startRecordVideo();
 					}
 				});
 			}
@@ -247,7 +247,7 @@ public class CameraFragment extends Fragment {
 					public void run() {
 						audioEncoderIsReady = true;
 						if (videoEncoderIsReady && audioEncoderIsReady);
-							startRecordVideo();
+						startRecordVideo();
 					}
 				});
 			}
@@ -284,25 +284,6 @@ public class CameraFragment extends Fragment {
 	private static void setVideoOrientationEnum(){
 		if (videoOrientationEnum == null){
 			videoOrientationEnum = CameraActivity.getOrientationEnum();
-		} else {
-			OrientationEnum currentOrientationDeviceEnum = CameraActivity.getOrientationEnum();
-			if (videoOrientationEnum.equals(PORTRAIT) && currentOrientationDeviceEnum.equals(PORTRAIT_REVERSE)){
-				videoOrientationEnum = PORTRAIT_REVERSE;
-			} else if (videoOrientationEnum.equals(PORTRAIT_REVERSE) && currentOrientationDeviceEnum.equals(PORTRAIT)){
-				videoOrientationEnum = PORTRAIT;
-			} else if (videoOrientationEnum.equals(LANDSCAPE) && currentOrientationDeviceEnum.equals(LANDSCAPE_REVERSE)){
-				videoOrientationEnum = LANDSCAPE_REVERSE;
-			} else if (videoOrientationEnum.equals(LANDSCAPE_REVERSE) && currentOrientationDeviceEnum.equals(LANDSCAPE)){
-				videoOrientationEnum = LANDSCAPE;
-			}
 		}
 	}
-
-	public static ChunksManager.OnScreenshotEndCreationListener onScreenshotEndCreationListener
-			= new ChunksManager.OnScreenshotEndCreationListener() {
-		@Override
-		public void onEndScreenshotCreation() {
-			screenshotAnimator.startScreenshotAnim(chunksManager.getChunkScreenshots(currentFile));
-		}
-	};
 }

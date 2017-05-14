@@ -28,6 +28,10 @@ public class ChoseSound {
         return sound;
     }
 
+    public static void nullSound(){
+        sound = null;
+    }
+
     public void chooseAndCopyAssetsSoundToSd(){
         Random random = new Random();
         int soundNumber = random.nextInt(ASSETS_SOUNDS_ARRAY.length);

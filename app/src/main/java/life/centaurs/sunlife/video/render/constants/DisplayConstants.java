@@ -1,5 +1,6 @@
 package life.centaurs.sunlife.video.render.constants;
 
+import android.graphics.Color;
 import android.os.Environment;
 
 import org.joda.time.DateTime;
@@ -7,6 +8,7 @@ import org.joda.time.DateTime;
 import java.io.File;
 
 import life.centaurs.sunlife.video.render.display.ProgressBarManager;
+import life.centaurs.sunlife.video.render.enums.VideoSizeEnum;
 
 public final class DisplayConstants {
     public final static String DEPRECATION_ANNOTATION_MESs = "deprecation";
@@ -42,6 +44,11 @@ public final class DisplayConstants {
     public final static String EMPTY_STRING = "";
     public final static String DOT_STRING = ".";
 
+    public final static VideoSizeEnum VIDEO_SIZE = VideoSizeEnum.MEDIUM_SIZE;
+
+    public final static int TRANSPOSE_CLOCKWISE_90 = 1;
+    public final static int TRANSPOSE_COUNTER_CLOCKWISE_90 = 2;
+
     public final static int TOUGH_LENGTH_TO_SWITCH_CAMERA = 200;
 
     public final static int SCREENSHOT_NAME_START_COUNTER = 1;
@@ -50,18 +57,18 @@ public final class DisplayConstants {
     public final static int SCREENSHOT_VIDEO_DURATION = 3;//in seconds
     public final static int SCREENSHOTS_NUMBER = SCREENSHOT_VIDEO_DURATION * SCREENSHOTS_FRAMES_PER_SECOND;
 
-    private static int timeVideoProgressInSeconds = 60; //set hear time for VIDEO_PROGRESS_TIME in seconds
+    private static int timeVideoProgressInSeconds = 30; //set hear time for VIDEO_PROGRESS_TIME in seconds
     public final static int PROGRESS_VIDEO_TIME_KOEF = 10;
-    private static int setProgressVideoTime(int timeInSeconds){
+    private static int getProgressVideoTime(int timeInSeconds){
         return timeInSeconds * PROGRESS_VIDEO_TIME_KOEF;
     }
-    public final static int VIDEO_PROGRESS_TIME = setProgressVideoTime(timeVideoProgressInSeconds);
+    public final static int VIDEO_PROGRESS_TIME = getProgressVideoTime(timeVideoProgressInSeconds);
 
     public final static int TIME_PHOTO_PROGRESS = 3;// set time for photo in seconds
-    private static int setProgressPhoto(){
-        return (ProgressBarManager.getProgressStatusMax() * TIME_PHOTO_PROGRESS) / timeVideoProgressInSeconds;
+    public  static int getProgressByTimeInSeconds(int seconds){
+        return (ProgressBarManager.getProgressStatusMax() * seconds) / timeVideoProgressInSeconds;
     }
-    public final static int PHOTO_PROGRESS_STATUS = setProgressPhoto();
+    public final static int PHOTO_PROGRESS_STATUS = getProgressByTimeInSeconds(TIME_PHOTO_PROGRESS);
 
     public final static int TIME_PHOTO_BUTTON_ACTIVE_IN_MILLIS = 200;
     public final static int MIN_VIDEO_TIME_IN_MILLIS = 1000;
@@ -98,4 +105,10 @@ public final class DisplayConstants {
     private static String getDateTimeString(){
         return new DateTime(DateTime.now()).toString(DATE_FORMAT_STR);
     }
+
+    public static final long SCREEN_TOUCH_TIME = 2000;
+
+    public final static int CAMERA_MESSAGE_COLOR = Color.parseColor("#80FFFFFF");
+    public final static int CAMERA_MESSAGE_TEXT_SCALE_X = 1;
+    public final static int CAMERA_MESSAGE_TEXT_SIZE = 10;
 }

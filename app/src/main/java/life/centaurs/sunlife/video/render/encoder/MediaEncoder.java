@@ -10,8 +10,8 @@ import java.nio.ByteBuffer;
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.FORMAT_CHANGED_TWICE_MESSAGE;
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.IS_NULL_MESSAGE;
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.MUXER_HAS_NOT_STARTED_MESSAGE;
-import static life.centaurs.sunlife.video.render.display.CameraFragment.chunksManager;
 import static life.centaurs.sunlife.video.render.display.CameraFragment.currentFile;
+import static life.centaurs.sunlife.video.render.display.CameraNavigationFragment.chunksManager;
 
 public abstract class MediaEncoder implements Runnable {
 	protected static final int TIMEOUT_USEC = 10000;

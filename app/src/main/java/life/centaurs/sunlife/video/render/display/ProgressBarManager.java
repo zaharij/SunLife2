@@ -4,8 +4,6 @@ package life.centaurs.sunlife.video.render.display;
 import android.os.Handler;
 import android.widget.ProgressBar;
 
-import static life.centaurs.sunlife.video.render.constants.DisplayConstants.PROGRESS_VIDEO_TIME_KOEF;
-
 public final class ProgressBarManager{
     private ProgressBar progressBar;
     private int progressStatus = 0;
@@ -15,7 +13,8 @@ public final class ProgressBarManager{
     private OnProgressListener onProgressListener;
     private final static int PROGRESS_STATUS_MAX = 100;
     private static int lastChunkProgressStatus = 0;
-    private static int lastChunkDuration = 0;//in seconds
+    private static int lastChunkDurationProgress = 0;//in seconds
+    private static boolean timeIsOff = false;
 
     public interface OnProgressListener{
         public void onEndProgress();
@@ -27,8 +26,8 @@ public final class ProgressBarManager{
         this.onProgressListener = onProgressListener;
     }
 
-    public static int getLastChunkDuration() {
-        return lastChunkDuration;
+    public static int getLastChunkDurationProgress() {
+        return lastChunkDurationProgress;
     }
 
     public int getProgressStatus() {
@@ -39,18 +38,51 @@ public final class ProgressBarManager{
         return PROGRESS_STATUS_MAX;
     }
 
+    public static boolean isTimeIsOff() {
+        return timeIsOff;
+    }
+
+    public static void setTimeIsOff(boolean currentTimeIsOff) {
+        timeIsOff = currentTimeIsOff;
+    }
+
     public void setProgressStatus(int progressStatus) {
         if (progressStatus > 100){
             this.progressStatus = 100;
         } else {
             this.progressStatus = progressStatus;
         }
+        lastChunkDurationProgress = this.progressStatus - lastChunkProgressStatus;
+        lastChunkProgressStatus = this.progressStatus;
+        progressBar.setProgress(this.progressStatus);
+    }
+
+    public void increaseStatusProgressStatuc(int progress){
+        int tempProgress = progress + this.progressStatus;
+        if (tempProgress > 100){
+            this.progressStatus = 100;
+        } else {
+            this.progressStatus = tempProgress;
+        }
+        lastChunkDurationProgress = this.progressStatus - lastChunkProgressStatus;
+        lastChunkProgressStatus = this.progressStatus;
+        progressBar.setProgress(this.progressStatus);
+    }
+
+    public void decreaseProgressStatus(int progress){
+        int tempProgress = this.progressStatus - progress;
+        if (tempProgress < 0){
+            this.progressStatus = 0;
+        } else {
+            this.progressStatus = tempProgress;
+        }
         progressBar.setProgress(this.progressStatus);
     }
 
     public void pauseProgress(){
         resumed = false;
-        lastChunkDuration = ((timeVideoProgress / PROGRESS_VIDEO_TIME_KOEF) *(progressStatus - lastChunkProgressStatus)) / PROGRESS_STATUS_MAX;
+        lastChunkDurationProgress = progressStatus - lastChunkProgressStatus;
+        lastChunkProgressStatus = progressStatus;
     }
 
     public void startProgress(){
@@ -61,7 +93,7 @@ public final class ProgressBarManager{
     public void nullProgressBarStatus(){
         progressStatus = 0;
         lastChunkProgressStatus = 0;
-        lastChunkDuration = 0;
+        lastChunkDurationProgress = 0;
     }
 
     public void startProgressBar(){

@@ -18,12 +18,11 @@ import life.centaurs.sunlife.video.render.enums.DeviceCamerasEnum;
 import life.centaurs.sunlife.video.render.enums.MediaExtensionEnum;
 
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.getCaptureFile;
-import static life.centaurs.sunlife.video.render.display.CameraFragment.chunksManager;
 import static life.centaurs.sunlife.video.render.display.CameraFragment.currentFile;
+import static life.centaurs.sunlife.video.render.display.CameraNavigationFragment.chunksManager;
 import static life.centaurs.sunlife.video.render.enums.OrientationEnum.LANDSCAPE;
 import static life.centaurs.sunlife.video.render.enums.OrientationEnum.LANDSCAPE_REVERSE;
 import static life.centaurs.sunlife.video.render.enums.OrientationEnum.PORTRAIT;
-import static life.centaurs.sunlife.video.render.enums.OrientationEnum.PORTRAIT_REVERSE;
 
 public class PhotoManager {
     private static final String PHOTO_NAME_PREFIX = "SL_Photo_";
@@ -45,12 +44,17 @@ public class PhotoManager {
         //    public void run() {
                 Camera camera = cameraPreviewDisplay.getCamera();
                 Camera.Parameters parameters = camera.getParameters();
+//                if(CameraFragment.getCameraId() == DeviceCamerasEnum.BACK_CAMERA.getCAMERA_ID()){
+//                    parameters.setRotation(CameraFragment.getVideoOrientationEnum().getDegrees() <= PORTRAIT_REVERSE.getDegrees()
+//                            ? CameraFragment.getVideoOrientationEnum().getDegrees() + LANDSCAPE_REVERSE.getDegrees()
+//                            : PORTRAIT.getDegrees());
+//                } else {
+//                    parameters.setRotation(LANDSCAPE.getDegrees() - CameraFragment.getVideoOrientationEnum().getDegrees());
+//                }
                 if(CameraFragment.getCameraId() == DeviceCamerasEnum.BACK_CAMERA.getCAMERA_ID()){
-                    parameters.setRotation(CameraFragment.getVideoOrientationEnum().getDegrees() <= PORTRAIT_REVERSE.getDegrees()
-                            ? CameraFragment.getVideoOrientationEnum().getDegrees() + LANDSCAPE_REVERSE.getDegrees()
-                            : PORTRAIT.getDegrees());
+                    parameters.setRotation(PORTRAIT.getDegrees() + LANDSCAPE_REVERSE.getDegrees());
                 } else {
-                    parameters.setRotation(LANDSCAPE.getDegrees() - CameraFragment.getVideoOrientationEnum().getDegrees());
+                    parameters.setRotation(LANDSCAPE.getDegrees() - PORTRAIT.getDegrees());
                 }
                 final File[] curFile = new File[1];
                 camera.setParameters(parameters);

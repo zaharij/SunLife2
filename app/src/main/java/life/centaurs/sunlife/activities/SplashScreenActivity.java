@@ -9,8 +9,15 @@ import android.widget.TextView;
 import life.centaurs.sunlife.R;
 import life.centaurs.sunlife.animation.AnimationSunLife;
 import life.centaurs.sunlife.squad.ActivitySquad;
+import life.centaurs.sunlife.video.render.display.CameraActivity;
 
-import static life.centaurs.sunlife.constants.ActivitiesConstants.*;
+import static life.centaurs.sunlife.constants.ActivitiesConstants.CHANGE_IMAGE_TIME;
+import static life.centaurs.sunlife.constants.ActivitiesConstants.SPLASH_SCREEN_BACKGROUND_COLOR;
+import static life.centaurs.sunlife.constants.ActivitiesConstants.SPLASH_SCREEN_TIME_OUT;
+import static life.centaurs.sunlife.constants.ActivitiesConstants.VERSION_MESSAGE;
+import static life.centaurs.sunlife.constants.ActivitiesConstants.VERSION_MESSAGE_COLOR;
+import static life.centaurs.sunlife.constants.ActivitiesConstants.VERSION_MESSAGE_TEXT_SCALE_X;
+import static life.centaurs.sunlife.constants.ActivitiesConstants.VERSION_MESSAGE_TEXT_SIZE;
 
 /**
  * SplashScreenActivity
@@ -39,7 +46,7 @@ public class SplashScreenActivity extends AppCompatActivity {
         ActivitySquad.changeImageTimerStart(SplashScreenActivity.this, imageSwitcher, CHANGE_IMAGE_TIME);
 
         ActivitySquad.goFromCurrentActivityToNewActivity(SplashScreenActivity.this
-                , MainActivity.class, SPLASH_SCREEN_TIME_OUT);
+                , CameraActivity.class, SPLASH_SCREEN_TIME_OUT);
     }
 
     @Override

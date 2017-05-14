@@ -14,8 +14,8 @@ import life.centaurs.sunlife.video.render.glutils.RenderHandler;
 public class MediaVideoEncoder extends MediaEncoder {
 	private final static String TAG = "MVE";
 	private static final String MIME_TYPE = "video/avc";
-    private static final int FRAME_RATE = 25;
-    private static final float BPP = 0.25f;
+    public static final int FRAME_RATE = 25;
+    private static final float BITS_PER_PIXEL = 0.25f;
 
     private final int width;
     private final int height;
@@ -99,7 +99,7 @@ public class MediaVideoEncoder extends MediaEncoder {
 	}
 
 	private int calcBitRate() {
-		final int bitrate = (int)(BPP * FRAME_RATE * width * height);
+		final int bitrate = (int)(BITS_PER_PIXEL * FRAME_RATE * width * height);
 		return bitrate;
 	}
 

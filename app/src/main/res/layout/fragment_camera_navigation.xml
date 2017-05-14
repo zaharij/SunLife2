@@ -20,6 +20,30 @@
         android:layout_alignParentEnd="true" />
 
     <ImageView
+        android:id="@+id/imageViewProgressVideoEdit"
+        android:layout_width="match_parent"
+        android:layout_height="70dp"
+        android:layout_alignTop="@+id/progressBarVideoEdit"
+        android:layout_centerHorizontal="true"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="30dp"
+        android:src="#d5000000" />
+
+    <ProgressBar
+        android:id="@+id/progressBarVideoEdit"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignEnd="@+id/imageViewProgressVideoEdit"
+        android:layout_alignStart="@+id/imageViewProgressVideoEdit"
+        android:layout_centerVertical="true"
+        android:layout_marginTop="30dp"
+        android:indeterminate="false"
+        android:maxHeight="2dp"
+        android:minHeight="2dp"
+        android:progressDrawable="@drawable/video_edit_progress" />
+
+    <ImageView
         android:id="@+id/imageViewRecordButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -71,5 +95,53 @@
         android:layout_marginStart="34dp"
         android:layout_alignBottom="@+id/imageViewRecordButton"
         android:layout_toEndOf="@+id/imageViewRecordButton" />
+
+    <Button
+        android:id="@+id/buttonCancelProgressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/imageViewProgressVideoEdit"
+        android:layout_alignStart="@+id/imageViewProgressVideoEdit"
+        android:background="@drawable/btn_background" />
+
+    <Button
+        android:id="@+id/exitProgressButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/imageViewProgressVideoEdit"
+        android:layout_alignStart="@+id/imageViewProgressVideoEdit"
+        android:background="@drawable/btn_background" />
+
+    <Button
+        android:id="@+id/buttonSaveProgressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/imageViewProgressVideoEdit"
+        android:layout_alignEnd="@+id/imageViewProgressVideoEdit"
+        android:background="@drawable/btn_background" />
+
+    <Button
+        android:id="@+id/inBackgroundProgressButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/imageViewProgressVideoEdit"
+        android:layout_alignEnd="@+id/imageViewProgressVideoEdit"
+        android:background="@drawable/btn_background" />
+
+    <TextView
+        android:id="@+id/progressStatusTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/buttonCancelProgressBar"
+        android:layout_centerHorizontal="true" />
+
+    <TextView
+        android:id="@+id/textViewMessageCamera"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/imageViewProgressVideoEdit"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="30dp"
+        android:background="#4d010101" />
 
 </RelativeLayout>

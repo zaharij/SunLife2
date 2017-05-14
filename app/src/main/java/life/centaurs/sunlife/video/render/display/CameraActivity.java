@@ -19,6 +19,7 @@ import life.centaurs.sunlife.video.render.enums.MediaExtensionEnum;
 import life.centaurs.sunlife.video.render.enums.OrientationEnum;
 
 import static life.centaurs.sunlife.constants.ActivitiesConstants.SPLASH_SCREEN_BACKGROUND_COLOR;
+import static life.centaurs.sunlife.video.render.display.ProgressBarManager.isTimeIsOff;
 import static life.centaurs.sunlife.video.render.enums.OrientationEnum.LANDSCAPE;
 import static life.centaurs.sunlife.video.render.enums.OrientationEnum.LANDSCAPE_REVERSE;
 import static life.centaurs.sunlife.video.render.enums.OrientationEnum.PORTRAIT;
@@ -32,7 +33,6 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
     private int cameraId = DeviceCamerasEnum.BACK_CAMERA.getCAMERA_ID();
     private FragmentTransaction transaction;
     private static OrientationEnum orientationEnum = PORTRAIT;
-    private static boolean timeIsOff = false;
     private static MediaExtensionEnum videoExtension;
     private static MediaExtensionEnum photoExtension;
     private ChoseSound choseSound;
@@ -75,14 +75,6 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         return photoExtension;
     }
 
-    public static boolean isTimeIsOff() {
-        return timeIsOff;
-    }
-
-    public static void setTimeIsOff(boolean timeIsOff) {
-        CameraActivity.timeIsOff = timeIsOff;
-    }
-
     protected void onPause() {
         super.onPause();
         senSensorManager.unregisterListener(this);
@@ -101,6 +93,25 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
             float y = sensorEvent.values[1];
             float z = sensorEvent.values[2];
             setOrientationEnum(x, y, z);
+            if (!CameraNavigationFragment.isProcessing() && (CameraFragment.getRealVideoOrientationEnum() != null
+                    && getOrientationEnum() != CameraFragment.getRealVideoOrientationEnum())){
+                switch(CameraFragment.getRealVideoOrientationEnum()){
+                    case PORTRAIT:
+                        cameraNavigationFragment.setMessageText(getResources().getString(R.string.portrait_orientation_message));
+                        break;
+                    case PORTRAIT_REVERSE:
+                        cameraNavigationFragment.setMessageText(getResources().getString(R.string.reverse_portrait_orientation_message));
+                        break;
+                    case LANDSCAPE:
+                        cameraNavigationFragment.setMessageText(getResources().getString(R.string.landscape_orientation_message));
+                        break;
+                    case LANDSCAPE_REVERSE:
+                        cameraNavigationFragment.setMessageText(getResources().getString(R.string.reverse_landscape_orientation_message));
+                        break;
+                }
+            } else {
+                cameraNavigationFragment.setMessageText("");
+            }
         }
     }
 
@@ -150,7 +161,7 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
     @Override
     public void onClickButton(CommandEnum commandEnum) {
         switch(commandEnum){
-            case REMOVE_CHUNKS_AND_BACK_TO_MAIN:
+            case BACK_TO_MAIN:
                 ActivitySquad.goFromCurrentActivityToNewActivity(this, MainActivity.class);
                 break;
             case SWITCH_CAMERA:
@@ -158,7 +169,7 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
                 break;
             case START_RECORDING:
             case TAKE_PICTURE:
-                if(timeIsOff)break;
+                if(isTimeIsOff())break;
             default:
                 cameraFragment.onClickButton(commandEnum);
                 break;

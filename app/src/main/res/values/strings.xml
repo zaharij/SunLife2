@@ -1,3 +1,26 @@
 <resources>
     <string name="app_name">SunLife</string>
+    <string name="save_video_on_device">Save</string>
+    <string name="delete_video_from_device">Delete</string>
+    <string name="save_video_on_device_message">Do you want to save\n video on your device?</string>
+    <string name="processing_message">processing...</string>
+    <string name="saved_message">saved</string>
+    <string name="deleted_message">deleted</string>
+    <string name="saved_on_device_message">saved on your device</string>
+    <string name="save_on_device_menu">Save on device</string>
+    <string name="save_on_device_del_from_video_menu">Remove (save on device)</string>
+    <string name="process_is_runing_message">process is runing...</string>
+    <string name="canselled_message">process is cancelled!</string>
+    <string name="process_complete_message">success</string>
+    <string name="landscape_orientation_message">Current video file orientation is LANDSCAPE!</string>
+    <string name="portrait_orientation_message">Current video file orientation is PORTRAIT!</string>
+    <string name="reverse_portrait_orientation_message">Current video file orientation is REVERSE PORTRAIT!</string>
+    <string name="reverse_landscape_orientation_message">Current video file orientation is REVERSE LANDSCAPE!</string>
+    <string name="delete_chunk_menu">Remove</string>
+    <string name="save_video_dialog_head">SunLife Video</string>
+    <string name="processing_video_dialog_head">SunLife Video</string>
+    <string name="cancel_btn">CANCEL</string>
+    <string name="save_btn">IN BACKGR</string>
+    <string name="cancel_btn_2">EXIT</string>
+    <string name="save_btn_2"> SAVE </string>
 </resources>

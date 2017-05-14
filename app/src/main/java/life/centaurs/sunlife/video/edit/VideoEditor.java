@@ -2,7 +2,6 @@ package life.centaurs.sunlife.video.edit;
 
 
 import android.content.Context;
-import android.os.Handler;
 
 import com.github.hiteshsondhi88.libffmpeg.ExecuteBinaryResponseHandler;
 import com.github.hiteshsondhi88.libffmpeg.FFmpeg;
@@ -14,15 +13,14 @@ import com.github.hiteshsondhi88.libffmpeg.exceptions.FFmpegNotSupportedExceptio
  * VideoEditor
  * The purpose of this class is video editing
  */
-public final class VideoEditor {
+public final class VideoEditor{
     private FFmpeg ffmpeg;
-    private Handler handler = new Handler();
 
     public interface OnFfmpegSuccessListener{
         void onSuccess();
     }
 
-    public VideoEditor (Context context){
+    public VideoEditor(Context context){
         this.ffmpeg = FFmpeg.getInstance(context);
         loadFFmpegBinary();
     }
@@ -45,11 +43,8 @@ public final class VideoEditor {
                 public void onFinish() {}
             });
         } catch (FFmpegNotSupportedException e) {
-            // Handle if FFmpeg is not supported by device
         }
     }
-
-
 
     public void execFFmpegBinary(final String[] command, final OnFfmpegSuccessListener onFfmpegSuccessListener) {
         new Thread(new Runnable() {
