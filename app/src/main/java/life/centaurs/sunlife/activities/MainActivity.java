@@ -6,7 +6,6 @@ import android.view.View;
 
 import life.centaurs.sunlife.R;
 import life.centaurs.sunlife.squad.ActivitySquad;
-import life.centaurs.sunlife.video.render.display.CameraActivity;
 
 public class MainActivity extends AppCompatActivity {
 

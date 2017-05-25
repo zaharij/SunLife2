@@ -1,18 +1,25 @@
-package life.centaurs.sunlife.video.render.display;
+package life.centaurs.sunlife.activities;
 
+import android.Manifest;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
+import android.widget.Toast;
 
 import life.centaurs.sunlife.R;
-import life.centaurs.sunlife.activities.MainActivity;
 import life.centaurs.sunlife.squad.ActivitySquad;
+import life.centaurs.sunlife.video.render.display.CameraFragment;
+import life.centaurs.sunlife.video.render.display.CameraNavigationFragment;
+import life.centaurs.sunlife.video.render.display.ChoseSound;
+import life.centaurs.sunlife.video.render.display.FragmentsCommunicationListener;
 import life.centaurs.sunlife.video.render.enums.CommandEnum;
 import life.centaurs.sunlife.video.render.enums.DeviceCamerasEnum;
 import life.centaurs.sunlife.video.render.enums.MediaExtensionEnum;
@@ -54,6 +61,12 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         choseSound = new ChoseSound(this);
         choseSound.chooseAndCopyAssetsSoundToSd();
 
+        if (!checkWriteExternalPermission()){
+            ActivityCompat.requestPermissions(CameraActivity.this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE
+                    , Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA
+                    , Manifest.permission.RECORD_AUDIO}, 1);
+        }
+
         cameraFragment = new CameraFragment(cameraId);
         transaction = getFragmentManager().beginTransaction();
         transaction.replace(R.id.container, cameraFragment);
@@ -65,6 +78,43 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
         transaction.replace(R.id.container1, cameraNavigationFragment);
         transaction.addToBackStack(null);
         transaction.commit();
+    }
+
+    private boolean checkWriteExternalPermission() {
+        int readResultPermission = this.checkCallingOrSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE);
+        int cameraResultPermission = this.checkCallingOrSelfPermission(Manifest.permission.CAMERA);
+        int writeResultPermission = this.checkCallingOrSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        int recordResultPermission = this.checkCallingOrSelfPermission(Manifest.permission.RECORD_AUDIO);
+        return (readResultPermission == PackageManager.PERMISSION_GRANTED
+                && cameraResultPermission == PackageManager.PERMISSION_GRANTED
+                && writeResultPermission == PackageManager.PERMISSION_GRANTED
+                && recordResultPermission == PackageManager.PERMISSION_GRANTED);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case 1: {
+
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the
+                    // contacts-related task you need to do.
+                } else {
+
+                    // permission denied, boo! Disable the
+                    // functionality that depends on this permission.
+                    Toast.makeText(CameraActivity.this, "Permission denied to read your External storage", Toast.LENGTH_SHORT).show();
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
     }
 
     public static MediaExtensionEnum getVideoExtension() {
@@ -162,7 +212,7 @@ public class CameraActivity extends AppCompatActivity implements SensorEventList
     public void onClickButton(CommandEnum commandEnum) {
         switch(commandEnum){
             case BACK_TO_MAIN:
-                ActivitySquad.goFromCurrentActivityToNewActivity(this, MainActivity.class);
+                ActivitySquad.goFromCurrentActivityToNewActivity(this, CameraActivity.class);
                 break;
             case SWITCH_CAMERA:
                 switchCamera();

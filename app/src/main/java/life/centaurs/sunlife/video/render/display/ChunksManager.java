@@ -10,6 +10,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
+import life.centaurs.sunlife.activities.CameraActivity;
 import life.centaurs.sunlife.video.edit.VideoEditor;
 import life.centaurs.sunlife.video.render.enums.MediaExtensionEnum;
 import life.centaurs.sunlife.video.render.enums.OrientationEnum;

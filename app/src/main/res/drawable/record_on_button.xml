@@ -1,9 +1,9 @@
 <animation-list xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/loading"
     android:oneshot="false" >
-    <item android:drawable="@mipmap/record_btn_0" android:duration="10"/>
-    <item android:drawable="@mipmap/record_btn_1" android:duration="10"/>
-    <item android:drawable="@mipmap/record_btn_2" android:duration="10"/>
-    <item android:drawable="@mipmap/record_btn_3" android:duration="10"/>
-    <item android:drawable="@mipmap/record_btn_4" android:duration="10"/>
+    <item android:drawable="@drawable/record_btn_0" android:duration="10"/>
+    <item android:drawable="@drawable/record_btn_1" android:duration="10"/>
+    <item android:drawable="@drawable/record_btn_2" android:duration="10"/>
+    <item android:drawable="@drawable/record_btn_3" android:duration="10"/>
+    <item android:drawable="@drawable/record_btn_4" android:duration="10"/>
 </animation-list>

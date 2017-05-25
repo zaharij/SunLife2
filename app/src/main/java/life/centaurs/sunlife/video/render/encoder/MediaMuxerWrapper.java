@@ -8,7 +8,7 @@ import android.text.TextUtils;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
-import life.centaurs.sunlife.video.render.display.CameraActivity;
+import life.centaurs.sunlife.activities.CameraActivity;
 import life.centaurs.sunlife.video.render.display.CameraFragment;
 
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.MUXER_ALREADY_STARTED_MESSAGE;

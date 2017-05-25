@@ -120,14 +120,6 @@
         android:layout_alignEnd="@+id/imageViewProgressVideoEdit"
         android:background="@drawable/btn_background" />
 
-    <Button
-        android:id="@+id/inBackgroundProgressButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/imageViewProgressVideoEdit"
-        android:layout_alignEnd="@+id/imageViewProgressVideoEdit"
-        android:background="@drawable/btn_background" />
-
     <TextView
         android:id="@+id/progressStatusTextView"
         android:layout_width="wrap_content"

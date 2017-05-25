@@ -15,6 +15,8 @@ public class ProgressBarDialog {
     private Button cancelButton, okButton, cancelButton2, okButton2;
     private int progressStatus;
     private int oneUpdateProgressStatus;
+    public static boolean isProcessing = false;
+    public static boolean isCancelled = false;
 
     enum ProgressBarDialogVisibilityEnum{
         VISIBLE, INVISIBLE;
@@ -50,11 +52,17 @@ public class ProgressBarDialog {
 
     }
 
+    public static void setIsCancelled(boolean isCancelled) {
+        ProgressBarDialog.isCancelled = isCancelled;
+    }
+
     public void setProgressStatus(int progressStatus) {
         int temp = this.progressStatus + progressStatus;
         if (temp >= MAX_STATUS_NUMBER){
             this.progressStatus = MAX_STATUS_NUMBER;
-            this.okButton.setEnabled(true);
+            if (okButton != null){
+                this.okButton.setEnabled(true);
+            }
             setProgress(MAX_STATUS_NUMBER);
         }
         else {
@@ -80,8 +88,10 @@ public class ProgressBarDialog {
     }
 
     private void setProgress(int progressNumber){
-        progressBar.setProgress(progressNumber);
-        progressText.setText("" + progressNumber + "%");
+        if(!isCancelled){
+            progressBar.setProgress(progressNumber);
+            progressText.setText("" + progressNumber + "%");
+        }
     }
 
     public void setProgressText(String text){
@@ -89,10 +99,18 @@ public class ProgressBarDialog {
     }
 
     public void showOnEndProgressChoiceDialog(){
-        cancelButton.setVisibility(View.INVISIBLE);
-        okButton.setVisibility(View.INVISIBLE);
-        cancelButton2.setVisibility(View.VISIBLE);
-        okButton2.setVisibility(View.VISIBLE);
+        if (cancelButton != null){
+            cancelButton.setVisibility(View.INVISIBLE);
+        }
+        if (okButton != null){
+            okButton.setVisibility(View.INVISIBLE);
+        }
+        if (!isProcessing){
+            cancelButton2.setVisibility(View.VISIBLE);
+            cancelButton2.setEnabled(true);
+            okButton2.setVisibility(View.VISIBLE);
+            okButton2.setEnabled(true);
+        }
     }
 
     public void setVisibility(ProgressBarDialogVisibilityEnum progressBarDialogVisibilityEnum){
@@ -101,15 +119,30 @@ public class ProgressBarDialog {
                 backgroundImageView.setVisibility(View.VISIBLE);
                 progressBar.setVisibility(View.VISIBLE);
                 progressText.setVisibility(View.VISIBLE);
-                cancelButton.setVisibility(View.VISIBLE);
-                okButton.setVisibility(View.VISIBLE);
+                if (cancelButton != null){
+                    cancelButton.setVisibility(View.VISIBLE);
+                } else {
+                    cancelButton2.setVisibility(View.VISIBLE);
+                    cancelButton2.setEnabled(false);
+                }
+                if (okButton != null){
+                    okButton.setVisibility(View.VISIBLE);
+                } else {
+                    okButton2.setVisibility(View.VISIBLE);
+                    okButton2.setEnabled(false);
+                }
                 break;
             case INVISIBLE:
                 backgroundImageView.setVisibility(View.INVISIBLE);
                 progressBar.setVisibility(View.INVISIBLE);
                 progressText.setVisibility(View.INVISIBLE);
-                cancelButton.setVisibility(View.INVISIBLE);
-                okButton.setVisibility(View.INVISIBLE);
+                if (cancelButton != null){
+                    cancelButton.setVisibility(View.INVISIBLE);
+                }
+                if (okButton != null){
+                    okButton.setVisibility(View.INVISIBLE);
+                }
+
                 try {
                     cancelButton2.setVisibility(View.INVISIBLE);
                     okButton2.setVisibility(View.INVISIBLE);

@@ -3,7 +3,7 @@ package life.centaurs.sunlife.video.edit;
 
 import java.io.File;
 
-import life.centaurs.sunlife.video.render.display.CameraActivity;
+import life.centaurs.sunlife.activities.CameraActivity;
 import life.centaurs.sunlife.video.render.enums.OrientationEnum;
 
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.SCREENSHOTS_NUMBER;

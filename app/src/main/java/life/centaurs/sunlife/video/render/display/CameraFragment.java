@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 
 import life.centaurs.sunlife.R;
+import life.centaurs.sunlife.activities.CameraActivity;
 import life.centaurs.sunlife.video.render.encoder.MediaAudioEncoder;
 import life.centaurs.sunlife.video.render.encoder.MediaEncoder;
 import life.centaurs.sunlife.video.render.encoder.MediaMuxerWrapper;

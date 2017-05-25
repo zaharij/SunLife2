@@ -12,6 +12,7 @@
     <string name="process_is_runing_message">process is runing...</string>
     <string name="canselled_message">process is cancelled!</string>
     <string name="process_complete_message">success</string>
+    <string name="process_cancelled_message">please wait..</string>
     <string name="landscape_orientation_message">Current video file orientation is LANDSCAPE!</string>
     <string name="portrait_orientation_message">Current video file orientation is PORTRAIT!</string>
     <string name="reverse_portrait_orientation_message">Current video file orientation is REVERSE PORTRAIT!</string>

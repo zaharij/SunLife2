@@ -28,10 +28,12 @@ import java.util.Iterator;
 import java.util.Set;
 
 import life.centaurs.sunlife.R;
+import life.centaurs.sunlife.activities.CameraActivity;
 
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.CAMERA_MESSAGE_COLOR;
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.CAMERA_MESSAGE_TEXT_SCALE_X;
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.CAMERA_MESSAGE_TEXT_SIZE;
+import static life.centaurs.sunlife.video.render.constants.DisplayConstants.DEPRECATION_ANNOTATION_MESs;
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.MIN_VIDEO_TIME_IN_MILLIS;
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.NAME_SEPARATOR;
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.PHOTO_PROGRESS_STATUS;
@@ -39,6 +41,7 @@ import static life.centaurs.sunlife.video.render.constants.DisplayConstants.TIME
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.VIDEO_PROGRESS_TIME;
 import static life.centaurs.sunlife.video.render.constants.DisplayConstants.getMediaDir;
 import static life.centaurs.sunlife.video.render.display.CameraFragment.currentFile;
+import static life.centaurs.sunlife.video.render.display.ProgressBarDialog.isProcessing;
 import static life.centaurs.sunlife.video.render.encoder.PhotoManager.getPhotoNamePrefix;
 import static life.centaurs.sunlife.video.render.enums.CommandEnum.BACK_TO_MAIN;
 import static life.centaurs.sunlife.video.render.enums.CommandEnum.START_RECORDING;
@@ -70,12 +73,11 @@ public class CameraNavigationFragment extends Fragment implements ProgressBarMan
     private ImageView backgroundImageView;
     private ProgressBar progressBar;
     private TextView progressText, messageTextView;
-    private Button cancelButton, okButton, cancelButton2, okButton2;
-    private static boolean isProcessing = false;
+    private Button cancelButton, cancelButton2, okButton2;
 
     public static ChunksManager chunksManager;
 
-    @SuppressWarnings("deprecation")
+    @SuppressWarnings(DEPRECATION_ANNOTATION_MESs)
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
@@ -107,6 +109,9 @@ public class CameraNavigationFragment extends Fragment implements ProgressBarMan
     public View onCreateView(final LayoutInflater inflater, final ViewGroup container, final Bundle savedInstanceState) {
         final View rootView = inflater.inflate(R.layout.fragment_camera_navigation, container, false);
 
+        isProcessing = false;
+        progressBarVideoEditingDialog.setIsCancelled(false);
+
         progressBarHorizontal = (ProgressBar) rootView.findViewById(R.id.progressBarHorizontal);
         progressBarManager = new ProgressBarManager(progressBarHorizontal, VIDEO_PROGRESS_TIME, this);
 
@@ -119,7 +124,7 @@ public class CameraNavigationFragment extends Fragment implements ProgressBarMan
 
         imageViewRecordButton = (ImageView) rootView.findViewById(R.id.imageViewRecordButton);
         imageViewRecordButton.setOnTouchListener(onRecordButtonTouchListener);
-        imageViewRecordButton.setBackgroundResource(R.mipmap.record_btn_0);
+        imageViewRecordButton.setBackgroundResource(R.drawable.record_btn_0);
 
         messageTextView = (TextView) rootView.findViewById(R.id.textViewMessageCamera);
         messageTextView.setTextColor(CAMERA_MESSAGE_COLOR);
@@ -211,16 +216,13 @@ public class CameraNavigationFragment extends Fragment implements ProgressBarMan
         progressText = (TextView) rootView.findViewById(R.id.progressStatusTextView);
         cancelButton = (Button) rootView.findViewById(R.id.buttonCancelProgressBar);
         cancelButton.setOnClickListener(onClickListenerVideoChunks);
-        okButton = (Button) rootView.findViewById(R.id.inBackgroundProgressButton);
-        okButton.setOnClickListener(onClickListenerVideoChunks);
         cancelButton2 = (Button) rootView.findViewById(R.id.exitProgressButton);
         cancelButton2.setOnClickListener(onClickListenerVideoChunks);
         okButton2 = (Button) rootView.findViewById(R.id.buttonSaveProgressBar);
         okButton2.setOnClickListener(onClickListenerVideoChunks);
         progressBarVideoEditingDialog = new ProgressBarDialog(backgroundImageView, progressBar
-                , progressText, cancelButton, okButton, cancelButton2, okButton2);
+                , progressText, cancelButton, null, cancelButton2, okButton2);
         progressBarVideoEditingDialog.setTextToCancelButton(getResources().getString(R.string.cancel_btn));
-        progressBarVideoEditingDialog.setTextToOkButton(getResources().getString(R.string.save_btn));
         progressBarVideoEditingDialog.setTextToCancelButton2(getResources().getString(R.string.cancel_btn_2));
         progressBarVideoEditingDialog.setTextToOkButton2(getResources().getString(R.string.save_btn_2));
         progressBarVideoEditingDialog.setVisibility(ProgressBarDialog.ProgressBarDialogVisibilityEnum.INVISIBLE);
@@ -293,16 +295,12 @@ public class CameraNavigationFragment extends Fragment implements ProgressBarMan
                     Toast.makeText(context, R.string.deleted_message, Toast.LENGTH_SHORT).show();
                     fragmentsCommunicationListener.onClickButton(BACK_TO_MAIN);
                     break;
-                case R.id.inBackgroundProgressButton:
-                    Toast.makeText(context, R.string.process_is_runing_message, Toast.LENGTH_SHORT).show();
-                    fragmentsCommunicationListener.onClickButton(BACK_TO_MAIN);
-                    break;
                 case R.id.buttonCancelProgressBar:
                     cancelButton.setEnabled(false);
-                    okButton.setEnabled(false);
                     chunksManager.setIsCancelled(true);
+                    progressBarVideoEditingDialog.setIsCancelled(true);
+                    progressBarVideoEditingDialog.setProgressText(getResources().getString(R.string.process_cancelled_message));
                     Toast.makeText(context, R.string.canselled_message, Toast.LENGTH_SHORT).show();
-                    fragmentsCommunicationListener.onClickButton(BACK_TO_MAIN);
                     break;
             }
         }
@@ -439,7 +437,7 @@ public class CameraNavigationFragment extends Fragment implements ProgressBarMan
             startRecordingVisualisation(isRecording);
             fragmentsCommunicationListener.onClickButton(STOP_RECORDING);
         }
-        imageViewRecordButton.setBackgroundResource(R.mipmap.record_btn_0);
+        imageViewRecordButton.setBackgroundResource(R.drawable.record_btn_0);
         ProgressBarManager.setTimeIsOff(true);
     }
 
@@ -534,7 +532,7 @@ public class CameraNavigationFragment extends Fragment implements ProgressBarMan
             imageButtonSaveVideo.setImageResource(R.drawable.btn_save_video);
         } else {
             isReadyToSaveVideo = false;
-            imageButtonSaveVideo.setImageResource(R.mipmap.save_frames_unactive);
+            imageButtonSaveVideo.setImageResource(R.drawable.save_frames_unactive);
         }
     }
 
