@@ -39,59 +39,47 @@ public class PhotoManager {
     }
 
     public void takePhoto(){
-        //new Thread(new Runnable() {
-        //    @Override
-        //    public void run() {
-                Camera camera = cameraPreviewDisplay.getCamera();
-                Camera.Parameters parameters = camera.getParameters();
-//                if(CameraFragment.getCameraId() == DeviceCamerasEnum.BACK_CAMERA.getCAMERA_ID()){
-//                    parameters.setRotation(CameraFragment.getVideoOrientationEnum().getDegrees() <= PORTRAIT_REVERSE.getDegrees()
-//                            ? CameraFragment.getVideoOrientationEnum().getDegrees() + LANDSCAPE_REVERSE.getDegrees()
-//                            : PORTRAIT.getDegrees());
-//                } else {
-//                    parameters.setRotation(LANDSCAPE.getDegrees() - CameraFragment.getVideoOrientationEnum().getDegrees());
-//                }
-                if(CameraFragment.getCameraId() == DeviceCamerasEnum.BACK_CAMERA.getCAMERA_ID()){
-                    parameters.setRotation(PORTRAIT.getDegrees() + LANDSCAPE_REVERSE.getDegrees());
-                } else {
-                    parameters.setRotation(LANDSCAPE.getDegrees() - PORTRAIT.getDegrees());
-                }
-                final File[] curFile = new File[1];
-                camera.setParameters(parameters);
-                camera.takePicture(null, null, new Camera.PictureCallback() {
-                    @Override
-                    public void onPictureTaken(byte[] data, Camera camera) {
-                        byte[] imageBytes = data;
-                        if (CameraFragment.getCameraId() == DeviceCamerasEnum.FRONT_CAMERA.getCAMERA_ID()) {
-                            Bitmap newImage = null;
-                            Bitmap cameraBitmap = null;
-                            if (data != null) {
-                                cameraBitmap = BitmapFactory.decodeByteArray(data, 0, (data != null) ? data.length : 0);
-                                if (fragment.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
-                                    Matrix mtx = new Matrix();
-                                    mtx.preScale(-1.0f, 1.0f);
-                                    newImage = Bitmap.createBitmap(cameraBitmap, 0, 0, cameraBitmap.getWidth(), cameraBitmap.getHeight(), mtx, true);
-                                }
-                            }
-                            ByteArrayOutputStream stream = new ByteArrayOutputStream();
-                            newImage.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-                            imageBytes = stream.toByteArray();
+        Camera camera = cameraPreviewDisplay.getCamera();
+        Camera.Parameters parameters = camera.getParameters();
+        if(CameraFragment.getCameraId() == DeviceCamerasEnum.BACK_CAMERA.getCAMERA_ID()){
+            parameters.setRotation(PORTRAIT.getDegrees() + LANDSCAPE_REVERSE.getDegrees());
+        } else {
+            parameters.setRotation(LANDSCAPE.getDegrees() - PORTRAIT.getDegrees());
+        }
+        final File[] curFile = new File[1];
+        camera.setParameters(parameters);
+        camera.takePicture(null, null, new Camera.PictureCallback() {
+            @Override
+            public void onPictureTaken(byte[] data, Camera camera) {
+                byte[] imageBytes = data;
+                if (CameraFragment.getCameraId() == DeviceCamerasEnum.FRONT_CAMERA.getCAMERA_ID()) {
+                    Bitmap newImage = null;
+                    Bitmap cameraBitmap = null;
+                    if (data != null) {
+                        cameraBitmap = BitmapFactory.decodeByteArray(data, 0, (data != null) ? data.length : 0);
+                        if (fragment.getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT) {
+                            Matrix mtx = new Matrix();
+                            mtx.preScale(-1.0f, 1.0f);
+                            newImage = Bitmap.createBitmap(cameraBitmap, 0, 0, cameraBitmap.getWidth(), cameraBitmap.getHeight(), mtx, true);
                         }
-                        try {
-                            File file = getCaptureFile(MediaExtensionEnum.JPG.getExtensionStr(), PHOTO_NAME_PREFIX);
-                            curFile[0] = file;
-                            FileOutputStream fos = new FileOutputStream(file);
-                            fos.write(imageBytes);
-                            fos.close();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        cameraPreviewDisplay.restartPreview();
-                        currentFile = curFile[0];
-                        chunksManager.setChunkFile(currentFile);
                     }
-                });
-            //}
-        //}).start();
+                    ByteArrayOutputStream stream = new ByteArrayOutputStream();
+                    newImage.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+                    imageBytes = stream.toByteArray();
+                }
+                try {
+                    File file = getCaptureFile(MediaExtensionEnum.JPG.getExtensionStr(), PHOTO_NAME_PREFIX);
+                    curFile[0] = file;
+                    FileOutputStream fos = new FileOutputStream(file);
+                    fos.write(imageBytes);
+                    fos.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                cameraPreviewDisplay.restartPreview();
+                currentFile = curFile[0];
+                chunksManager.setChunkFile(currentFile);
+            }
+        });
     }
 }
