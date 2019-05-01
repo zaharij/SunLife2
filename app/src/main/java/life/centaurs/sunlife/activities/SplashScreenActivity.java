@@ -23,8 +23,6 @@ import static life.centaurs.sunlife.constants.ActivitiesConstants.VERSION_MESSAG
  * This class describes splash screen activity
  */
 public class SplashScreenActivity extends AppCompatActivity {
-    private ImageSwitcher imageSwitcher;
-    private TextView textViewVersion;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,13 +30,13 @@ public class SplashScreenActivity extends AppCompatActivity {
         setContentView(R.layout.activity_splash_screen);
         View viewBackground = this.getWindow().getDecorView();
         viewBackground.setBackgroundColor(SPLASH_SCREEN_BACKGROUND_COLOR);
-        textViewVersion = (TextView) findViewById(R.id.textViewVersion);
+        TextView textViewVersion = findViewById(R.id.textViewVersion);
         textViewVersion.setTextColor(VERSION_MESSAGE_COLOR);
         textViewVersion.setTextScaleX(VERSION_MESSAGE_TEXT_SCALE_X);
         textViewVersion.setTextSize(VERSION_MESSAGE_TEXT_SIZE);
         textViewVersion.setText(VERSION_MESSAGE);
 
-        imageSwitcher = (ImageSwitcher)findViewById(R.id.imageSwitcher);
+        ImageSwitcher imageSwitcher = findViewById(R.id.imageSwitcher);
 
         AnimationSunLife.imageEmergenceAlphaAnimation(imageSwitcher);
 
