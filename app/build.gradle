@@ -25,11 +25,19 @@ dependencies {
     })
     implementation 'com.android.support:appcompat-v7:28.0.0'
     implementation 'com.android.support.constraint:constraint-layout:2.0.0-alpha5'
+
+    //time
     implementation 'joda-time:joda-time:2.9.7'
+
+    //video
     implementation 'com.writingminds:FFmpegAndroid:0.3.2'
     implementation 'org.mp4parser:streaming:1.9.27'
+
+    //view
     implementation 'com.android.support:gridlayout-v7:28.0.0'
     implementation 'com.android.support:cardview-v7:28.0.0'
     implementation 'com.android.support:recyclerview-v7:28.0.0'
+
+    //testing
     testImplementation 'junit:junit:4.12'
 }
